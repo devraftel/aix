@@ -1,14 +1,14 @@
-# Aix - GenAI Powered Interactive Quizzes and Answers Evaluation GPT.
+# Aix - GenAI Powered Interactive Quizzes and FeedBack GPT.
 
-Quizify AI is here to transform the way quizzes are created, taken, and evaluated, catering to the needs of students, instructors, and educational institutions alike.
+Aix is here to transform the way quizzes are created, taken, and evaluated, catering to the needs of students, instructors, and educational institutions alike. And it provides instant feedback to students for each attempted questions and personalized learning resources.
 
 ## The Problem:
-Traditional quiz systems are outdated, limiting, and time-consuming. Students find quizzes monotonous, with limited MCQs question types, while instructors spend hours crafting quizzes or manually grading them.
+Traditional quiz systems are outdated, limiting, and time-consuming. Students find quizzes monotonous, with limited MCQs question types, no feedback for quiz attempt while instructors spend hours crafting quizzes or manually grading them.
 This monotony leads to disengagement and inefficiency in the learning process.
 
 ## Our Solution:
 
-We have developed a Quiz GPT System to Generate & Attempt Quizzes and Quiz Answers Evaluation System. 
+We have developed a Quiz GPT System to Generate & Attempt Quizzes, Quiz Answers Evaluation and Feedback System. 
 
 Aix offers:
 
@@ -16,11 +16,11 @@ Aix offers:
 
 2. *Interactive Quiz Taking:* Take Verbal or Text Quizzes with a Multi Modal Supervisor keeping eyes on student.
 
-3. Effortless Grading: Bid farewell to manual grading. AIX assesses responses, and use Gen AI to evaluate open ended and coding questions and freeing up valuable time for instructors.
+3. *Effortless Grading:* Bid farewell to manual grading. AIX assesses responses, and use Gen AI to evaluate open ended and coding questions and freeing up valuable time for instructors.
 
 4. *Personalized Evaluation:* Our Evaluation GPT provides personalized feedback on each question, offering tailored resources to enhance understanding and mastery of concepts.
 
-5. Adaptive Learning for All Students: Students can signup and generate Quizzes for Practice. Customize quizzes to suit individual learning styles and pace. Aix adapts its question generation and difficulty levels based on student's performance, promoting personalized learning experiences.
+5. *Adaptive Learning for All Students:* Students can signup and generate Quizzes for Practice. Customize quizzes to suit individual learning styles and pace. Aix adapts its question generation and difficulty levels based on student's performance, promoting personalized learning experiences.
 
 ## Why Now?
 
