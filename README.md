@@ -2,6 +2,12 @@
 
 Aix is here to transform the way quizzes are created, taken, and evaluated, catering to the needs of students, instructors, and educational institutions alike. And it provides instant feedback to students for each attempted questions and personalized learning resources.
 
+## Unique Selling Point
+
+Yes, there are a lot of Quiz Systems that proves there's market need. And our market research suggests they all require us to think and Add Questions to Generate Quiz. And manually check them unless they are all MCQs.
+
+-> OUR USP: Create interactive quizzes dynamically with all type of Questions, and immediately get personalised feedback & learning path for each attempted question.
+
 ## The Problem:
 Traditional quiz systems are outdated, limiting, and time-consuming. Students find quizzes monotonous, with limited MCQs question types, no feedback for quiz attempt while instructors spend hours crafting quizzes or manually grading them.
 This monotony leads to disengagement and inefficiency in the learning process.
