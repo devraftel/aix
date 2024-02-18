@@ -36,7 +36,7 @@ Our team comprises passionate developers and AI enthusiasts dedicated to reimagi
 ## Our Ask:
 We're seeking partnerships with educational institutions, e-learning platforms, and edtech enthusiasts who share our vision for transformative learning experiences. Whether you're an educator looking to innovate in the classroom or a tech enthusiast excited about the potential of AI in education, we'd love to connect!
 
-Join us in shaping the future of quizzing with Aiz – where innovation meets education. Contact us at founders@Aix.ai to learn more.
+Join us in shaping the future of quizzing with Aiz – where innovation meets education. Let's Connect!
 
 ## Broader Vision:
 While AIX is revolutionizing quizzing, our ultimate goal extends beyond assessments. We envision a future where AI-powered solutions enhance every facet of the learning journey – from personalized tutoring to immersive simulations. With Aix as our flagship product, we're committed to empowering educators and learners worldwide through the transformative potential of AI in education.
