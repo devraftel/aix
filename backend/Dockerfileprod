@@ -1,0 +1,30 @@
+FROM tiangolo/uvicorn-gunicorn-fastapi:python3.10-slim-2022-11-25
+
+ENV PYTHONUNBUFFERED=1
+# Set environment variables for Uvicorn configuration
+ENV HOST=0.0.0.0
+ENV PORT=8000
+
+
+WORKDIR /code
+
+# Install Poetry
+
+RUN apt update && apt install -y curl && \
+    curl -sSL https://install.python-poetry.org | POETRY_HOME=/opt/poetry python && \
+    ln -s /opt/poetry/bin/poetry /usr/local/bin/poetry && \
+    poetry config virtualenvs.create false
+
+# Copy your application code
+COPY backend/app /code
+
+# Install dependencies
+COPY backend/app/pyproject.toml backend/app/poetry.lock* /code/
+RUN poetry install --no-root --no-dev
+
+ENV PYTHONPATH=/code
+
+EXPOSE $PORT
+
+# Use CMD to start the FastAPI server via Uvicorn, using environment variables
+CMD uvicorn app.main:app --host $HOST --port $PORT
