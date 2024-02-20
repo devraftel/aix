@@ -27,12 +27,12 @@ docker compose -f docker-compose-dev.yml exec fastapi_server alembic upgrade hea
 
 - Build
 
-`docker buildx build --platform linux/amd64 --no-cache -t mjunaidca/fastapi-alembic-sqlmodel-async-aix_fastapi_server:latest -f backend/Dockerfileprod .`
+`docker buildx build --platform linux/amd64 --no-cache -t mjunaidca/aix_fastapi_server:latest -f backend/Dockerfileprod .`
 
 - Run Locally for Testing
 
-`docker run --env-file .env -d --name aix -p 8000:8000  mjunaidca/fastapi-alembic-sqlmodel-async-aix_fastapi_server:latest  `
+`docker run --env-file .env -d --name aix -p 8000:8000  mjunaidca/aix_fastapi_server:latest  `
 
 - Push to DockerHub & Deploy on Google Run
 
-`docker push mjunaidca/fastapi-alembic-sqlmodel-async-aix_fastapi_server:latest`
+`docker push mjunaidca/aix_fastapi_server:latest`

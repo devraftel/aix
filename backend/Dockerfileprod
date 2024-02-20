@@ -16,10 +16,10 @@ RUN apt update && apt install -y curl && \
     poetry config virtualenvs.create false
 
 # Copy your application code
-COPY backend/app /code
+COPY backend/src /code
 
 # Install dependencies
-COPY backend/app/pyproject.toml backend/app/poetry.lock* /code/
+COPY backend/src/pyproject.toml backend/src/poetry.lock* /code/
 RUN poetry install --no-root --no-dev
 
 ENV PYTHONPATH=/code
@@ -27,4 +27,5 @@ ENV PYTHONPATH=/code
 EXPOSE $PORT
 
 # Use CMD to start the FastAPI server via Uvicorn, using environment variables
-CMD uvicorn app.main:app --host $HOST --port $PORT
+# CMD uvicorn app.main:app --host $HOST --port $PORT
+CMD alembic upgrade head && gunicorn -w 3 -k uvicorn.workers.UvicornWorker app.main:app  --bind 0.0.0.0:8000 --preload --log-level=debug --timeout 120

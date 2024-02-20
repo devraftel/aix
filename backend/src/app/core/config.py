@@ -16,7 +16,7 @@ class Settings(BaseSettings):
     MODE: ModeEnum = ModeEnum.development
     API_VERSION: str = "v1"
     API_V1_STR: str = f"/api/{API_VERSION}"
-    PROJECT_NAME: str | None = None
+    PROJECT_NAME: str = ""
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 1  # 1 hour
     REFRESH_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 100  # 100 days
     OPENAI_API_KEY: str | None = None
