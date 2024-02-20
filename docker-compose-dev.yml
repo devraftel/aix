@@ -11,8 +11,7 @@ services:
     expose:
       - 8000
     ports:
-      - "8000:8000"
-    env_file: ".env"  # Corrected path here
+      - '8000:8000'
+    env_file: '.env' # Corrected path here
     environment:
       - ASYNC_DATABASE_URI=${ASYNC_DATABASE_URI}
-      
