@@ -1,6 +1,6 @@
 import os
 from pydantic_core.core_schema import FieldValidationInfo
-from pydantic import  AnyHttpUrl, field_validator
+from pydantic import AnyHttpUrl, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import Any
 from enum import Enum
@@ -41,8 +41,6 @@ class Settings(BaseSettings):
         elif isinstance(v, (list, str)):
             return v
         raise ValueError(v)
-    
-    
 
     model_config = SettingsConfigDict(
         case_sensitive=True, env_file=os.path.expanduser("~/.env")

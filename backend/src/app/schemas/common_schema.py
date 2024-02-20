@@ -2,10 +2,12 @@ from app.utils.uuid6 import uuid7
 from pydantic import BaseModel, field_validator
 from enum import Enum
 
+
 # Random Sample Models
 class TokenType(str, Enum):
     ACCESS = "access_token"
     REFRESH = "refresh_token"
+
 
 class IChatResponse(BaseModel):
     """Chat response schema."""
