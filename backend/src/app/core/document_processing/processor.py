@@ -1,27 +1,32 @@
-import aiohttp
 import io
-from typing import Union
 from python_docx import Document
 import pdfplumber
 from fastapi import HTTPException
 
 
-async def process_file_from_url(file_url: str) -> Union[str, None]:
-    async with aiohttp.ClientSession() as session:
-        async with session.get(file_url) as response:
-            if response.status == 200:
-                if file_url.endswith('.txt') or 'text/plain' in response.headers['Content-Type']:
-                    return await response.text()
-                elif file_url.endswith('.docx') or 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' in response.headers['Content-Type']:
-                    content = await response.read()
-                    return process_docx(io.BytesIO(content))
-                elif file_url.endswith('.pdf') or 'application/pdf' in response.headers['Content-Type']:
-                    content = await response.read()
-                    return process_pdf(io.BytesIO(content))
-                else:
-                    raise HTTPException(status_code=415, detail="Unsupported file type")
-            else:
-                raise HTTPException(status_code=400, detail=f"Failed to download file: HTTP {response.status}")
+# Import your embedding functions
+from app.core.text_embedding import receive_and_process_text
+
+
+async def process_uploaded_file(file) -> None:
+    """Processes uploaded file, extracts text, and sends for embedding."""
+
+    try:
+        file_bytes = await file.read()
+
+        if file.content_type == 'text/plain':
+            text = file_bytes.decode()
+            await receive_and_process_text(text)
+        elif file.content_type in ['application/vnd.openxmlformats-officedocument.wordprocessingml.document']:
+            text = process_docx(io.BytesIO(file_bytes))
+            await receive_and_process_text(text)
+        elif file.content_type == 'application/pdf':
+            text = process_pdf(io.BytesIO(file_bytes))
+            await receive_and_process_text(text)
+        else:
+            raise HTTPException(status_code=415, detail="Unsupported file type")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error processing file: {str(e)}")
 
 
 def process_docx(file_stream) -> str:
