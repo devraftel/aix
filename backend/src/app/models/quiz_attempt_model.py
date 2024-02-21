@@ -8,7 +8,7 @@ from app.models.base_uuid_model import BaseUUIDModel
 from app.utils.model_enums import QuestionTypeEnum
 
 if TYPE_CHECKING:
-    from app.models.quiz_model import Quiz  # Avoid circular imports at runtime
+    from app.models.quiz_engine_model import Quiz  # Avoid circular imports at runtime
     from app.models.question_bank_model import Question  # Avoid circular imports at runtime
     from app.models.quiz_feedback_model import QuizFeedback, QuizQuestionFeedback  # Avoid circular imports at runtime
 

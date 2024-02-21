@@ -10,7 +10,7 @@ app = FastAPI(
 )
 
 
-@app.get("/hi")
+@app.get("/hi", tags=["Health"])
 async def root():
     return {"message": "Hello World"}
 

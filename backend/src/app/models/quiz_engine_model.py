@@ -14,8 +14,10 @@ if TYPE_CHECKING:
 class QuizBase(SQLModel):
     title: str = Field(index=True)
     user_id: str = Field(index=True)
-    time_limit: timedelta = Field(default=timedelta(minutes=0))
-    total_points: int = Field(default=0)
+    has_user_attempted: bool = Field(default=False)
+    time_limit: timedelta | None = Field(default=timedelta(minutes=0)) # Proposal: Make it time_limit_minutes
+    total_points: int | None = Field(default=0)
+    total_questions: int | None = Field(default=0)
 
 
 class Quiz(BaseUUIDModel, QuizBase, table=True):
@@ -26,3 +28,7 @@ class Quiz(BaseUUIDModel, QuizBase, table=True):
     )
     quiz_attempts: list["QuizAttempt"] = Relationship(back_populates="quiz")
     quiz_grades: list["QuizGrade"] = Relationship(back_populates="quiz")
+
+    # Count of questions in the quiz
+    def count_questions(self):
+        return len(self.questions)
