@@ -5,7 +5,6 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 from uuid import UUID
 
 class CRUDHero:  
-
     async def get_hero_list(self, *, db_session: AsyncSession) -> list[Hero]:
         heroes = await db_session.execute(select(Hero))
         all_heroes = list(heroes.scalars().all())
