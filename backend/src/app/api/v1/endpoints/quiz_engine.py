@@ -95,6 +95,16 @@ async def generate_quiz_rag_ai_pipeline(
     Wrapper API That used RAG Pipeline to Generate Quiz Questions and calls create_quiz
     """
     try:
+        # 1. Take user Prompt and get prep the RAG query Structure - call OpenAI if needed
+        # 2. using selected file_ids & Query Structure, Call RAG Pipeline to get the Content
+
+        #  --- AI Pipelines
+
+        # 3. Strucutre Prompt & call OpenAI to Generate the Questions
+        # 4. Create Quiz using the Questions - Store Questions, Answers for MCQs etc.
+
+        # Return Quiz Created Basic Data (Fields in Quiz table only)
+        
         pass
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))

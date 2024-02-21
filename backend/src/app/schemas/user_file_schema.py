@@ -12,11 +12,12 @@ class IUserFileRead(UserFileBase):
     created_at: datetime
 
 class IPaginatedUserFileList(SQLModel):
-    data: list[IUserFileRead]
     total: int
-    page: int
-    size: int
-    total_pages: int
+    next_page: int | None
+    prev_page: int | None
+
+    data: list[IUserFileRead]
+
 
 class IUserFileRemove(SQLModel):
     id: UUID
