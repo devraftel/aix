@@ -10,7 +10,5 @@ class QuizBase(SQLModel):
     time_limit: timedelta | None = Field(default=None)
 
 
-
 class Quiz(BaseUUIDModel, QuizBase, table=True):
     pass
-
