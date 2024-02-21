@@ -8,7 +8,8 @@ from app.models.link_model import LinkQuizFile
 if TYPE_CHECKING:
     from app.models.question_bank_model import Question  # Avoid circular imports at runtime
     from app.models.user_file_modal import UserFile  # Avoid circular imports at runtime
-    from app.models.quiz_attempt_model import QuizAttempt, QuizGrade  # Avoid circular imports at runtime
+    from app.models.quiz_attempt_model import QuizAttempt  # Avoid circular imports at runtime
+    from app.models.quiz_grade_model import QuizGrade  # Avoid circular imports at runtime
 
 
 class QuizBase(SQLModel):
