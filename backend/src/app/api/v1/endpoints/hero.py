@@ -3,7 +3,6 @@ from fastapi import APIRouter, Depends, HTTPException
 from typing import Annotated
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-
 from app import crud
 from app.api.deps import get_db
 from app.models.hero_model import Hero
@@ -25,6 +24,7 @@ async def get_hero_list(db_session: Annotated[AsyncSession, Depends(get_db)]):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
 @router.get("/get_by_id/{hero_id}", response_model=IHeroRead)
 async def get_hero_by_id(hero_id: UUID, db_session: Annotated[AsyncSession, Depends(get_db)]):
     """
@@ -38,10 +38,11 @@ async def get_hero_by_id(hero_id: UUID, db_session: Annotated[AsyncSession, Depe
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
 @router.get("/get_by_name/{hero_name}", response_model=IHeroRead)
 async def get_hero_by_name(
-    hero_name: str,
-    db_session: Annotated[AsyncSession, Depends(get_db)]
+        hero_name: str,
+        db_session: Annotated[AsyncSession, Depends(get_db)]
 ):
     """
     Gets a hero by his/her name
@@ -54,11 +55,12 @@ async def get_hero_by_name(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
 @router.post("")
 async def create_hero(
-    hero: IHeroCreate,
-    db_session: Annotated[AsyncSession, Depends(get_db)]
-    ):
+        hero: IHeroCreate,
+        db_session: Annotated[AsyncSession, Depends(get_db)]
+):
     """
     Creates a new hero
 
@@ -74,11 +76,12 @@ async def create_hero(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
 @router.patch("/{hero_id}", response_model=IHeroRead)
 async def update_hero(
-    hero_id: UUID,
-    hero: IHeroUpdate,
-    db_session: Annotated[AsyncSession, Depends(get_db)],
+        hero_id: UUID,
+        hero: IHeroUpdate,
+        db_session: Annotated[AsyncSession, Depends(get_db)],
 ):
     """
     Updates a hero by its id
@@ -106,7 +109,7 @@ async def remove_hero(hero_id: UUID, db_session: Annotated[AsyncSession, Depends
     - manager
     """
     try:
-        del_hero = await crud.hero.delete_hero(hero_id=hero_id, db_session=db_session )
+        del_hero = await crud.hero.delete_hero(hero_id=hero_id, db_session=db_session)
         return del_hero
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))

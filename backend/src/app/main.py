@@ -9,9 +9,11 @@ app = FastAPI(
     openapi_url=f"{settings.API_V1_STR}/openapi.json"
 )
 
+
 @app.get("/hi")
 async def root():
     return {"message": "Hello World"}
+
 
 # Add Routers
 app.include_router(api_router_v1, prefix=settings.API_V1_STR)
