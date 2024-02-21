@@ -25,6 +25,8 @@ docker compose -f docker-compose-dev.yml exec fastapi_server alembic upgrade hea
 
 ### 3. Google Run Deployment
 
+1. In core > config.py update the MODE to production and ensure you have added ASYNC_DATABASE_URI in .env
+
 - Build
 
 `docker buildx build --platform linux/amd64 --no-cache -t mjunaidca/aix_fastapi_server:latest -f backend/Dockerfileprod .`
