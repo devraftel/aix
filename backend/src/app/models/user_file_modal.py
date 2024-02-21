@@ -10,7 +10,7 @@ class UserFileBase(SQLModel):
     bytes: int | None = Field(default=None)
 
 class UserFile(BaseUUIDModel, UserFileBase, table=True):
-    quizzes: list["app.models.quiz_model.Quiz"] = Relationship(
+    quizzes: list["app.models.quiz_engine_model.Quiz"] = Relationship(
         back_populates="user_files",
         link_model=LinkQuizFile
     )
