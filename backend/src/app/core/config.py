@@ -25,6 +25,11 @@ class Settings(BaseSettings):
     POOL_SIZE: int = max(DB_POOL_SIZE // WEB_CONCURRENCY, 5)
     ASYNC_DATABASE_URI: str = ""
 
+    CLERK_SECRET_KEY: str = os.environ["CLERK_SECRET_KEY"]
+    CLERK_API_BACKEND_URL: str = os.environ["CLERK_API_BACKEND_URL"]
+    CLERK_API_FRONTEND_URL: str = os.environ["CLERK_API_FRONTEND_URL"]
+    CLERK_JWT_KEYS_URL: str = os.environ["CLERK_JWT_KEYS_URL"]
+
     @field_validator("ASYNC_DATABASE_URI", mode="after")
     def assemble_db_connection(cls, v: str | None, info: FieldValidationInfo) -> Any:
         if isinstance(v, str):
