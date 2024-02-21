@@ -4,12 +4,12 @@ from logging.config import fileConfig
 from sqlmodel import SQLModel
 from sqlalchemy.ext.asyncio import create_async_engine
 from alembic import context
-from app.core.config import Settings
 import sys
 import pathlib
 
 sys.path.append(str(pathlib.Path(__file__).resolve().parents[1]))
 
+from app.core.config import Settings
 from app.models import *  # necessarily to import something from file where your models are stored
 
 settings = Settings()
