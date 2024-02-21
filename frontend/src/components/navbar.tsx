@@ -7,7 +7,12 @@ import Link from 'next/link';
 import { Logo } from './logo';
 
 const Navbar = async () => {
-	const { userId }: { userId: string | null } = auth();
+	const { userId, getToken, sessionId } = auth();
+	// const rest = await auth();
+	// const token = await getToken();
+	// console.log('Session ID is: ', sessionId);
+	// console.log('User ID is: ', rest);
+	// console.log('Token is: ', token);
 
 	return (
 		<nav className='sticky h-14 inset-x-0 top-0 z-30 w-full border-b border-gray-200 bg-white/75 backdrop-blur-lg transition-all'>

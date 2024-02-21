@@ -1,6 +1,6 @@
 import os
 from pydantic_core.core_schema import FieldValidationInfo
-from pydantic import AnyHttpUrl, field_validator
+from pydantic import AnyHttpUrl, field_validator, PostgresDsn
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import Any
 from enum import Enum
@@ -25,11 +25,25 @@ class Settings(BaseSettings):
     POOL_SIZE: int = max(DB_POOL_SIZE // WEB_CONCURRENCY, 5)
     ASYNC_DATABASE_URI: str = ""
 
+    CLERK_SECRET_KEY: str = os.environ["CLERK_SECRET_KEY"]
+    CLERK_API_BACKEND_URL: str = os.environ["CLERK_API_BACKEND_URL"]
+    CLERK_API_FRONTEND_URL: str = os.environ["CLERK_API_FRONTEND_URL"]
+    CLERK_JWT_KEYS_URL: str = os.environ["CLERK_JWT_KEYS_URL"]
+
     @field_validator("ASYNC_DATABASE_URI", mode="after")
     def assemble_db_connection(cls, v: str | None, info: FieldValidationInfo) -> Any:
         if isinstance(v, str):
-            if v == "":
+            if v == "" and settings.MODE == ModeEnum.production:
                 return info.data["ASYNC_DATABASE_URI"]
+            elif v == "" and settings.MODE == ModeEnum.development:
+                return PostgresDsn.build(
+                    scheme="postgresql+asyncpg",
+                    username=info.data["DATABASE_USER"],
+                    password=info.data["DATABASE_PASSWORD"],
+                    host=info.data["DATABASE_HOST"],
+                    port=info.data["DATABASE_PORT"],
+                    path=info.data["DATABASE_NAME"],
+                )
         return v
 
     BACKEND_CORS_ORIGINS: list[str] | list[AnyHttpUrl] | None = None
