@@ -1,5 +1,5 @@
 import io
-from python_docx import Document
+from docx import Document
 import pdfplumber
 from fastapi import HTTPException
 
