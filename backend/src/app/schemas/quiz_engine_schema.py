@@ -9,10 +9,6 @@ from app.utils.model_enums import QuestionTypeEnum, QuestionDifficultyEnum
 
 
 class IQuizCreate(QuizBase):
-
-    # Optionally Add Questions When creating a quiz
-    questions: list[Question] = []
-
     @field_validator('time_limit')
     def check_time_limit(cls, value):
         if value.total_seconds() < 0:
@@ -27,6 +23,11 @@ class IQuizUpdate(SQLModel):
 
 class IQuizRead(QuizBase):
     id: UUID
+
+class IQuizRemove(SQLModel):
+    id: UUID
+    quiz_name: str
+    deleted: bool
 
 
 class IPaginatedQuizList(SQLModel):

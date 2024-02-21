@@ -3,7 +3,6 @@ from uuid import UUID
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.models.user_file_modal import UserFile
-from app.schemas.user_file_schema import IPaginatedUserFileList
 
 
 class CRUDUserFile:

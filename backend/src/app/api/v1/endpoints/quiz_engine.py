@@ -5,17 +5,34 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app import crud
 from app.api.deps import get_db
-from app.schemas.quiz_engine_schema import (IQuizCreate, IQuizUpdate, IQuizRead, IPaginatedQuizList, IGenerateQuiz)
+from app.schemas.quiz_engine_schema import (
+    IQuizCreate, IQuizUpdate, IQuizRead, IPaginatedQuizList, IGenerateQuiz, IQuizRemove)
 
 router = APIRouter()
 
+
 @router.get("", response_model=IPaginatedQuizList)
-async def get_quiz_list(user_id: str, db_session: Annotated[AsyncSession, Depends(get_db)], skip: int= Query(default=0, le=100), limit: int = Query(default=8, le=10)):
+async def get_quiz_list(user_id: str, # TODO: Dependency Injection to validate USER and get user_id
+                        db_session: Annotated[AsyncSession, Depends(get_db)], 
+                        skip: int = Query(default=0, le=100), 
+                        limit: int = Query(default=8, le=10)):
     """
     Gets a paginated list of quizzes for a user
     """
     try:
-        pass
+        quizzes_list = await crud.quiz_engine.get_user_quizzes_list(user_id=user_id, db_session=db_session, offset=skip, limit=limit)
+        
+        count_quiz: int = await crud.quiz_engine.get_count_of_quizzes_for_user(user_id=user_id, db_session=db_session)
+
+        # Create IPaginatedUserFileList
+        paginated_response = IPaginatedQuizList(
+            total=count_quiz,
+            data=quizzes_list,
+            next_page=skip+limit if skip+limit < int(count_quiz) else None,
+            prev_page=skip-limit if skip-limit >= 0 else None
+        )
+
+        return paginated_response
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
@@ -23,16 +40,18 @@ async def get_quiz_list(user_id: str, db_session: Annotated[AsyncSession, Depend
 
 
 @router.get("/get_by_id/{quiz_id}", response_model=IQuizRead)
-async def get_quiz_by_id(quiz_id: UUID, db_session: Annotated[AsyncSession, Depends(get_db)]):
+async def get_quiz_by_id(user_id: str, quiz_id: UUID, db_session: Annotated[AsyncSession, Depends(get_db)]):
     """
     Gets a quiz by its id
     """
     try:
-        pass
+        quiz_retrieved = await crud.quiz_engine.get_quiz_by_id(user_id=user_id, quiz_id=quiz_id, db_session=db_session)
+        return quiz_retrieved
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
 
 @router.post("/create", response_model=IQuizRead)
 async def create_quiz(
@@ -45,7 +64,8 @@ async def create_quiz(
     We will use this API to create a Custom Action in ChatGPT interface when creating out CustomGPT
     """
     try:
-        pass
+        quiz_created = await crud.quiz_engine.create_quiz(quiz_obj=quiz, db_session=db_session)
+        return quiz_created
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
@@ -60,23 +80,25 @@ async def update_quiz(
         db_session: Annotated[AsyncSession, Depends(get_db)],
 ):
     """
-    Updates a quiz by its id
+    Updates a quiz title or duration by its id
     """
     try:
-        pass
+        quiz_updated = await crud.quiz_engine.update_quiz(user_id=user_id, quiz_id=quiz_id, quiz_obj=quiz, db_session=db_session)
+        return quiz_updated
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.delete("/{quiz_id}")
-async def remove_quiz(user_id:str, quiz_id: UUID, db_session: Annotated[AsyncSession, Depends(get_db)]):
+@router.delete("/{quiz_id}", response_model=IQuizRemove)
+async def remove_quiz(user_id: str, quiz_id: UUID, db_session: Annotated[AsyncSession, Depends(get_db)]):
     """
     Deletes a quiz by its id
     """
     try:
-        pass
+        quiz_deleted = await crud.quiz_engine.delete_quiz(quiz_id=quiz_id, db_session=db_session)
+        return quiz_deleted
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
@@ -104,7 +126,7 @@ async def generate_quiz_rag_ai_pipeline(
         # 4. Create Quiz using the Questions - Store Questions, Answers for MCQs etc.
 
         # Return Quiz Created Basic Data (Fields in Quiz table only)
-        
+
         pass
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
