@@ -118,7 +118,7 @@ class CRUDUserFile:
             result = await db_session.exec(select(UserFile).where(and_(UserFile.id.in_(tuple(file_ids)), UserFile.user_id == user_id))) #type: ignore
             user_files = result.all()
             if not user_files:
-                raise ValueError("user_files not found")
+                raise ValueError("Error getting files for provided ids")
             return user_files
         except ValueError as e:
             await db_session.rollback()
