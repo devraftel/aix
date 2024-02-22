@@ -1,3 +1,4 @@
+import { Toaster } from '@/components/ui/sonner';
 import type { Metadata } from 'next';
 import { Open_Sans, Roboto } from 'next/font/google';
 import './globals.css';
@@ -28,15 +29,12 @@ export default function RootLayout({
 				<body
 					className={cn(
 						'min-h-screen font-sans antialiased grainy bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-100',
-						// inter.className
 						openSans.className,
 						robot.variable
 					)}
 				>
-					{/* <Navbar /> */}
-					{/* <main className='flex flex-col w-full flex-1 items-center justify-center mx-auto max-w-7xl'> */}
 					{children}
-					{/* </main> */}
+					<Toaster />
 				</body>
 			</html>
 		</ClerkProvider>

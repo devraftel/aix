@@ -1,26 +1,15 @@
 import MaxWidthWrapper from '@/components/max-width-wrapper';
-import { buttonVariants } from '@/components/ui/button';
-import { ArrowRight } from 'lucide-react';
-import Link from 'next/link';
+import { DrawerDemo } from '../_components/fileupload';
+import { QuizeForm } from '../_components/quiz-form';
 
 export default function QuizGenerate() {
 	return (
 		<>
-			<MaxWidthWrapper className='mb-12 mt-28 sm:mt-40 flex flex-col items-center justify-center text-center'>
-				<h1 className='max-w-4xl text-5xl font-bold md:text-6xl lg:text-7xl'>
-					Generate Quiz
-				</h1>
-
-				<Link
-					className={buttonVariants({
-						size: 'lg',
-						className: 'mt-5',
-					})}
-					href='/dashboard'
-					target='_blank'
-				>
-					Generate <ArrowRight className='ml-2 h-5 w-5' />
-				</Link>
+			<MaxWidthWrapper className='mb-12 mt-14 sm:mt-20 flex flex-col items-center justify-center text-center'>
+				<div className='bg-gradient-to-br from-gray-200/80 to-gray-300/10 border border-gray-200 drop-shadow-sm flex flex-col items-center justify-center p-7 rounded-3xl'>
+					<QuizeForm />
+				</div>
+				<DrawerDemo />
 			</MaxWidthWrapper>
 		</>
 	);

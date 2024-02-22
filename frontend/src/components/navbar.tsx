@@ -8,11 +8,6 @@ import { Logo } from './logo';
 
 const Navbar = async () => {
 	const { userId, getToken, sessionId } = auth();
-	// const rest = await auth();
-	// const token = await getToken();
-	// console.log('Session ID is: ', sessionId);
-	// console.log('User ID is: ', rest);
-	// console.log('Token is: ', token);
 
 	return (
 		<nav className='sticky h-14 inset-x-0 top-0 z-30 w-full border-b border-gray-200 bg-white/75 backdrop-blur-lg transition-all'>
@@ -46,15 +41,32 @@ const Navbar = async () => {
 						) : (
 							<>
 								<Link
-									href='/dashboard'
+									href='/quiz/generate'
 									className={buttonVariants({
 										variant: 'ghost',
 										size: 'sm',
 									})}
 								>
-									Dashboard
+									Generate Quiz
 								</Link>
-
+								<Link
+									href='/quiz'
+									className={buttonVariants({
+										variant: 'ghost',
+										size: 'sm',
+									})}
+								>
+									Quiz List
+								</Link>
+								<Link
+									href='/quiz'
+									className={buttonVariants({
+										variant: 'ghost',
+										size: 'sm',
+									})}
+								>
+									Attempt Quiz
+								</Link>
 								<UserButton />
 							</>
 						)}
