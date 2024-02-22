@@ -14,18 +14,27 @@ class CRUDUserFile:
                 raise ValueError("user_files not found")
             return user_files
         except ValueError as e:
+            await db_session.rollback()
             raise e
         except Exception as e:
+            await db_session.rollback()
             raise e
 
     async def get_file_by_id(self, *,user_id:str,  file_id: UUID, db_session: AsyncSession):
-        query = select(UserFile).where(and_(UserFile.id == file_id, UserFile.user_id == user_id))
-        result = await db_session.exec(query)
-        file_retrieved = result.one()
+        try:
+            query = select(UserFile).where(and_(UserFile.id == file_id, UserFile.user_id == user_id))
+            result = await db_session.exec(query)
+            file_retrieved = result.one_or_none()
 
-        if file_retrieved is None:
-            raise ValueError("file_retrieved not found")
-        return file_retrieved
+            if file_retrieved is None:
+                raise ValueError("File not found for this User")
+            return file_retrieved
+        except ValueError as e:
+            await db_session.rollback()
+            raise e
+        except Exception as e:
+            await db_session.rollback()
+            raise e
 
     async def get_count_of_files_for_user(
             self,
@@ -43,23 +52,27 @@ class CRUDUserFile:
                 raise ValueError("No files found")
             return value
         except ValueError as e:
+            await db_session.rollback()
             raise e
         except Exception as e:
+            await db_session.rollback()
             raise e
 
     async def delete_file(
-            self, *, db_session: AsyncSession, file_id: UUID
+            self, *, db_session: AsyncSession, file_id: UUID, user_id: str
     ):
         try:
-            file = await db_session.get(UserFile, file_id)
+            file = await self.get_file_by_id(user_id=user_id, file_id=file_id, db_session=db_session)
             if file is None:
                 raise ValueError("file not found")
             await db_session.delete(file)
             await db_session.commit()
             return {"id": file.id, "file_name": file.file_name, "deleted": True}
         except ValueError as e:
+            await db_session.rollback()
             raise e
         except Exception as e:
+            await db_session.rollback()
             raise e
         
     async def create_user_file(
@@ -71,6 +84,7 @@ class CRUDUserFile:
             await db_session.refresh(file_obj)
             return file_obj
         except Exception as e:
+            await db_session.rollback()
             raise e
         
     async def update_file_content_size(
@@ -87,8 +101,10 @@ class CRUDUserFile:
             await db_session.refresh(db_obj)
             return db_obj
         except ValueError as e:
+            await db_session.rollback()
             raise e
         except Exception as e:
+            await db_session.rollback()
             raise e
 
     async def get_file_ids_data(
@@ -105,8 +121,10 @@ class CRUDUserFile:
                 raise ValueError("user_files not found")
             return user_files
         except ValueError as e:
+            await db_session.rollback()
             raise e
         except Exception as e:
+            await db_session.rollback()
             raise e
 
 

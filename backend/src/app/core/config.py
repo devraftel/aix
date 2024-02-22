@@ -33,17 +33,17 @@ class Settings(BaseSettings):
     @field_validator("ASYNC_DATABASE_URI", mode="after")
     def assemble_db_connection(cls, v: str | None, info: FieldValidationInfo) -> Any:
         if isinstance(v, str):
-            if v == "" and settings.MODE == ModeEnum.production:
+            # if v == "" and settings.MODE == ModeEnum.development:
+            #     return PostgresDsn.build(
+            #         scheme="postgresql+asyncpg",
+            #         username=info.data["DATABASE_USER"],
+            #         password=info.data["DATABASE_PASSWORD"],
+            #         host=info.data["DATABASE_HOST"],
+            #         port=info.data["DATABASE_PORT"],
+            #         path=info.data["DATABASE_NAME"],
+            #     )
+            if v == "":
                 return info.data["ASYNC_DATABASE_URI"]
-            elif v == "" and settings.MODE == ModeEnum.development:
-                return PostgresDsn.build(
-                    scheme="postgresql+asyncpg",
-                    username=info.data["DATABASE_USER"],
-                    password=info.data["DATABASE_PASSWORD"],
-                    host=info.data["DATABASE_HOST"],
-                    port=info.data["DATABASE_PORT"],
-                    path=info.data["DATABASE_NAME"],
-                )
         return v
 
     BACKEND_CORS_ORIGINS: list[str] | list[AnyHttpUrl] | None = None
