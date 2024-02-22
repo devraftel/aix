@@ -5,11 +5,12 @@ from app.models.link_model import LinkQuizFile
 
 class UserFileBase(SQLModel):
     user_id: str = Field(index=True)
-    file_url: str
+    file_name: str | None = None
+    purpose: str = Field(default="quiz-questions")
+    bytes: int | None = Field(default=None)
 
 class UserFile(BaseUUIDModel, UserFileBase, table=True):
-    quizzes: list["app.models.quiz_model.Quiz"] = Relationship(
+    quizzes: list["app.models.quiz_engine_model.Quiz"] = Relationship(
         back_populates="user_files",
         link_model=LinkQuizFile
     )
-
