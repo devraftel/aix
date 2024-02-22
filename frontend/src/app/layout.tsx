@@ -1,12 +1,16 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Open_Sans, Roboto } from 'next/font/google';
 import './globals.css';
 
-import Navbar from '@/components/navbar';
 import { cn } from '@/lib/utils';
 import { ClerkProvider } from '@clerk/nextjs';
 
-const inter = Inter({ subsets: ['latin'] });
+const openSans = Open_Sans({ subsets: ['latin'], variable: '--font-opensans' });
+const robot = Roboto({
+	subsets: ['latin'],
+	variable: '--font-roboto',
+	weight: ['100', '300', '400', '500', '700', '900'],
+});
 
 export const metadata: Metadata = {
 	title: 'AIX GPT',
@@ -24,13 +28,15 @@ export default function RootLayout({
 				<body
 					className={cn(
 						'min-h-screen font-sans antialiased grainy bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-100',
-						inter.className
+						// inter.className
+						openSans.className,
+						robot.variable
 					)}
 				>
-					<Navbar />
-					<main className='flex flex-col w-full flex-1 items-center justify-center mx-auto max-w-7xl'>
-						{children}
-					</main>
+					{/* <Navbar /> */}
+					{/* <main className='flex flex-col w-full flex-1 items-center justify-center mx-auto max-w-7xl'> */}
+					{children}
+					{/* </main> */}
 				</body>
 			</html>
 		</ClerkProvider>
