@@ -9,14 +9,14 @@ export const QuizTopBar = async () => {
 	return (
 		<div className='flex items-center justify-center bg-gray-200 w-full px-4 font-roboto '>
 			{/* username / email */}
-			<div className='flex-1 text-sm font-medium'>
+			<div className='flex-1 text-sm font-medium hidden md:block'>
 				{user?.username ||
 					// user?.firstName ||
 					user?.emailAddresses[0].emailAddress}
 			</div>
 
 			{/* Quiz Title */}
-			<div className='flex-1 font-bold text-center text-sm lg:text-base'>
+			<div className='flex-1 font-bold text-left md:text-center text-sm lg:text-base'>
 				Quiz: Compose
 			</div>
 
