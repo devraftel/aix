@@ -1,7 +1,5 @@
 import MaxWidthWrapper from '@/components/max-width-wrapper';
-import { Button } from '@/components/ui/button';
 import { CountdownClock } from '../../_components/countdown-clock';
-import { QuizProgress } from '../../_components/quiz-progress';
 import { QuizQuestion } from '../../_components/quiz-question';
 import { QuizTopBar } from '../../_components/quiz-top-bar';
 
@@ -22,7 +20,7 @@ export default function QuizAttemp({ params }: QuizAttempProps) {
 
 					<QuizQuestion />
 
-					<div className='flex items-center justify-center w-full space-x-4 md:space-x-6 lg:space-x-8'>
+					{/* <div className='flex items-center justify-center w-full space-x-4 md:space-x-6 lg:space-x-8'>
 						<QuizProgress
 							currentQuestion={5}
 							totalQuestions={10}
@@ -33,7 +31,7 @@ export default function QuizAttemp({ params }: QuizAttempProps) {
 						>
 							Continue
 						</Button>
-					</div>
+					</div> */}
 				</div>
 			</MaxWidthWrapper>
 		</>
