@@ -33,9 +33,10 @@ class IQuizAttemptRead(QuizAttemptBase):
 
 
 class IQuizAttemptCreateResponse(SQLModel):
-    id: UUID
+    quiz_attempt_id: UUID
     total_points: int
     time_limit: timedelta
+    time_started: timedelta
     user_id: str
     quiz_id: UUID
     #TODO: Replace Question with Schema that includes MCQ options for MCQ type questions & exclude correct and extra fie;s using pydantic's parsing & validation

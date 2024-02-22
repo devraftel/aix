@@ -5,8 +5,11 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app import crud
 from app.api.deps import get_db
-from app.schemas.quiz_engine_schema import (
-    IQuizCreate, IQuizUpdate, IQuizRead, IPaginatedQuizList, IGenerateQuiz, IQuizRemove)
+from app.schemas.quiz_engine_schema import (IQuizCreate, IQuizUpdate, IQuizRead, IPaginatedQuizList, IGenerateQuiz, IQuizRemove)
+from app.schemas.question_engine_schema import IBatchQuestionsCreate
+
+# Mock Data
+from app.utils.mock.generated_questions import mock_generated_questions
 
 router = APIRouter()
 
@@ -53,18 +56,18 @@ async def get_quiz_by_id(user_id: str, quiz_id: UUID, db_session: Annotated[Asyn
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/create", response_model=IQuizRead)
+# @router.post("/create", response_model=IQuizRead)
 async def create_quiz(
-        quiz: IQuizCreate,
+        quiz_in: IQuizCreate,
         db_session: Annotated[AsyncSession, Depends(get_db)]
 ):
     """
-    Creates a new Quiz
+    Creates a new Quiz and add Questions to it
 
     We will use this API to create a Custom Action in ChatGPT interface when creating out CustomGPT
     """
     try:
-        quiz_created = await crud.quiz_engine.create_quiz(quiz_obj=quiz, db_session=db_session)
+        quiz_created = await crud.quiz_engine.create_quiz(quiz_obj=quiz_in, db_session=db_session)
         return quiz_created
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
@@ -105,9 +108,9 @@ async def remove_quiz(user_id: str, quiz_id: UUID, db_session: Annotated[AsyncSe
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# TODO: Endpoint to Generate QuizQuestions & Create Quiz using RAG Pipeline
 @router.post("/generate", response_model=IQuizRead)
 async def generate_quiz_rag_ai_pipeline(
+        user_id: str, # TODO: Dependency Injection to validate USER and get user_id from access_token
         generate_quiz_data: IGenerateQuiz,
         db_session: Annotated[AsyncSession, Depends(get_db)]
 ):
@@ -117,17 +120,43 @@ async def generate_quiz_rag_ai_pipeline(
     Wrapper API That used RAG Pipeline to Generate Quiz Questions and calls create_quiz
     """
     try:
-        # 1. Take user Prompt and get prep the RAG query Structure - call OpenAI if needed
-        # 2. using selected file_ids & Query Structure, Call RAG Pipeline to get the Content
+        # 0. Create Quiz in DB to get quiz_id
+        quiz_obj = IQuizCreate(title=generate_quiz_data.title, user_id=user_id, time_limit=generate_quiz_data.time_limit, user_file_ids=generate_quiz_data.file_ids)
+        quiz_in_db = await crud.quiz_engine.create_quiz(quiz_obj=quiz_obj, db_session=db_session)
 
-        #  --- AI Pipelines
+        # TODO: 1. RAG & AI PIPELINES
+        
+        # 1.1 RAG PIPELINE TO GET QUESTIONS CONTENT
+        #      -> Take user Prompt and get prep the RAG query Structure - call OpenAI if needed
+        #      -> Get the Questions Content using selected file_ids & Query Structure
 
-        # 3. Strucutre Prompt & call OpenAI to Generate the Questions
-        # 4. Create Quiz using the Questions - Store Questions, Answers for MCQs etc.
+        # 1.2 AI PIPELINE TO GENERATE QUESTIONS
+        #      -> Take the Questions Content and Generate the Questions using OpenAI Assistant or Completions API
+                    # -> In GPT prompt we will get time_limit for each question to calculate total quiz_time_limit
+        generated_questions = mock_generated_questions
 
-        # Return Quiz Created Basic Data (Fields in Quiz table only)
+        # 2. Add Questions to Quiz
+        # 2.1 Sanitize and add Questions in Database
+        
+        # - add quiz_id & user_id to each question
+        for question in generated_questions:
+            question["quiz_id"] = quiz_in_db.id
+            question["user_id"] = quiz_in_db.user_id
 
-        pass
+        # - sanitize and add questions to database
+        sanitized_questions_in = IBatchQuestionsCreate(questions=generated_questions)
+        await crud.question_engine.create_questions_batch(questions_in=sanitized_questions_in, db_session=db_session)
+
+        # - count questions_added, total_points, and time_limit (if returned from GPT)
+        count_questions_added = len(generated_questions)
+        total_points = sum([question["points"] for question in generated_questions])
+        time_limit = sum([question["time_limit"] for question in generated_questions])
+
+        # 3. Update Quiz Fields and return it
+        quiz_update_obj = IQuizUpdate(total_questions_count=count_questions_added, total_points=total_points, time_limit=time_limit)
+        quiz_updated = await crud.quiz_engine.update_quiz(user_id=user_id, quiz_id=quiz_in_db.id, quiz_obj=quiz_update_obj, db_session=db_session)
+        return quiz_updated
+
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:

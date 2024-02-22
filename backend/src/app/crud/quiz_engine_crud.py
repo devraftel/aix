@@ -2,6 +2,7 @@ from sqlmodel import select, func, and_
 from uuid import UUID
 from sqlmodel.ext.asyncio.session import AsyncSession
 
+from app import crud
 from app.models.quiz_engine_model import Quiz
 from app.schemas.quiz_engine_schema import IQuizUpdate, IQuizCreate
 
@@ -19,8 +20,9 @@ class CRUDQuizEngine:
         except Exception as e:
             raise e
 
-    async def get_quiz_by_id(self, *,user_id:str,  quiz_id: UUID, db_session: AsyncSession):
-        query = select(Quiz).where(and_(Quiz.id == quiz_id, Quiz.user_id == user_id))
+    async def get_quiz_by_id(self, *, user_id: str,  quiz_id: UUID, db_session: AsyncSession):
+        query = select(Quiz).where(
+            and_(Quiz.id == quiz_id, Quiz.user_id == user_id))
         result = await db_session.exec(query)
         quiz_retrieved = result.one()
 
@@ -62,7 +64,7 @@ class CRUDQuizEngine:
             raise e
         except Exception as e:
             raise e
-        
+
     async def update_quiz(
             self, *, db_session: AsyncSession, user_id: str, quiz_id: UUID, quiz_obj: IQuizUpdate
     ) -> Quiz:
@@ -70,11 +72,10 @@ class CRUDQuizEngine:
             db_obj = await self.get_quiz_by_id(user_id=user_id, quiz_id=quiz_id, db_session=db_session)
             if db_obj is None:
                 raise ValueError("Quiz not found")
-            
+
             for key, value in quiz_obj.model_dump(exclude_unset=True).items():
                 setattr(db_obj, key, value)
 
-            
             db_session.add(db_obj)
             await db_session.commit()
             await db_session.refresh(db_obj)
@@ -83,11 +84,16 @@ class CRUDQuizEngine:
             raise e
         except Exception as e:
             raise e
-        
+
     async def create_quiz(
             self, *, quiz_obj: IQuizCreate, db_session: AsyncSession
     ):
         try:
+            if quiz_obj.user_file_ids:
+                    # Data to Link Selected Files to Quiz
+                quiz_files_data_obj = await crud.user_file.get_file_ids_data(file_ids=quiz_obj.user_file_ids, user_id=quiz_obj.user_id, db_session=db_session)
+                quiz_obj.user_files.extend(quiz_files_data_obj)
+
             db_obj = Quiz.model_validate(quiz_obj)
             db_session.add(db_obj)
             await db_session.commit()
