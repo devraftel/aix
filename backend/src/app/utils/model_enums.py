@@ -10,4 +10,3 @@ class QuestionTypeEnum(str, enum.Enum):
     single_select_mcq = "single_select_mcq"
     multi_select_mcq = "multi_select_mcq"
     open_text_question = "open_text_question"
-    coding_question = "coding_question"

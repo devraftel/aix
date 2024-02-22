@@ -91,6 +91,23 @@ class CRUDUserFile:
         except Exception as e:
             raise e
 
+    async def get_file_ids_data(
+            self,
+            *,
+            file_ids: list,
+            user_id: str,
+            db_session: AsyncSession,
+    ):
+        try:
+            result = await db_session.exec(select(UserFile).where(and_(UserFile.id.in_(tuple(file_ids)), UserFile.user_id == user_id))) #type: ignore
+            user_files = result.all()
+            if not user_files:
+                raise ValueError("user_files not found")
+            return user_files
+        except ValueError as e:
+            raise e
+        except Exception as e:
+            raise e
 
 
 
