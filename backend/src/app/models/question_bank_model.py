@@ -26,7 +26,6 @@ class MCQOptions(BaseUUIDModel, MCQOptionsBase, table=True):
 # - Question Table
 class QuestionBase(SQLModel):
     question_text: str = Field(index=True)
-    default_grade: int = Field(default=1)
     difficulty: QuestionDifficultyEnum = QuestionDifficultyEnum.easy
     question_type: QuestionTypeEnum = Field(index=True)
     points: int = Field(default=1)

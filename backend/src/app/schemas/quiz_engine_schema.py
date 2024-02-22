@@ -39,13 +39,13 @@ class IPaginatedQuizList(SQLModel):
     skip: int | None = 0
     limit: int | None = 8
 
-class IGenerateQuiz(QuizBase):
+class IGenerateQuiz(SQLModel):
     title: str 
     user_id: str 
     time_limit: timedelta | None
     total_questions_to_generate: int
     questions_type: list[QuestionTypeEnum]
-    difficulty: list[QuestionDifficultyEnum]
+    difficulty: QuestionDifficultyEnum
     user_prompt: str | None = None
     file_ids: list[UUID] | None = None
 
