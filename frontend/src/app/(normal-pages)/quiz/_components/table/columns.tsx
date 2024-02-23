@@ -8,9 +8,12 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { ColumnDef } from '@tanstack/react-table';
+import { useDeleteQuizStore } from '@/store/delete-quiz';
+import { useQuizStartStore } from '@/store/quiz-start-store';
+import { ColumnDef, Row } from '@tanstack/react-table';
 import { MoreHorizontal, Settings } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 export type QuizList = {
 	id: string;
@@ -21,17 +24,77 @@ export type QuizList = {
 	status: 'complete' | 'available';
 };
 
+const ActionCell = ({ row }: { row: Row<QuizList> }) => {
+	const quiz = row.original;
+	const { isQuizStartOpen, setIsQuizStartOpen, setQuizId } =
+		useQuizStartStore();
+	const { isDeleteQuizOpen, setIsDeleteQuizOpen } = useDeleteQuizStore();
+	const router = useRouter();
+	return (
+		<DropdownMenu>
+			<DropdownMenuTrigger asChild>
+				<Button
+					variant='ghost'
+					className='h-8 w-8 p-0'
+				>
+					<span className='sr-only'>Open menu</span>
+					<MoreHorizontal className='h-4 w-4' />
+				</Button>
+			</DropdownMenuTrigger>
+			<DropdownMenuContent align='end'>
+				<DropdownMenuLabel>Actions</DropdownMenuLabel>
+				<DropdownMenuItem>
+					<Link
+						href={`/quiz/${quiz.id}`}
+						className=''
+					>
+						View Quiz
+					</Link>
+				</DropdownMenuItem>
+				<DropdownMenuSeparator />
+				<DropdownMenuItem
+					onClick={() => {
+						setQuizId(quiz.id);
+						setIsQuizStartOpen(!isQuizStartOpen);
+					}}
+				>
+					Attempt Quiz
+				</DropdownMenuItem>
+				<DropdownMenuSeparator />
+				<DropdownMenuItem>
+					<Link
+						href={`/quiz/${quiz.id}/feedback`}
+						className=''
+					>
+						Check Feedback
+					</Link>
+				</DropdownMenuItem>
+				<DropdownMenuSeparator />
+				<DropdownMenuItem
+					onClick={() => {
+						router.push(`/quiz?delete=${quiz.id}`);
+						setIsDeleteQuizOpen(!isDeleteQuizOpen);
+					}}
+				>
+					Delete Quiz
+				</DropdownMenuItem>
+			</DropdownMenuContent>
+		</DropdownMenu>
+	);
+};
+
 export const columns: ColumnDef<QuizList>[] = [
 	{
 		accessorKey: 'quizTitle',
 		header: () => <div className='text-left'>Title</div>,
 		cell: ({ row }) => {
 			return (
-				<div className='capitalize hover:underline underline-offset-2'>
-					<Link href={`/quiz/${row.original.id}`}>
-						{row.getValue('quizTitle')}
-					</Link>
-				</div>
+				<Link
+					href={`/quiz/${row.original.id}`}
+					className='capitalize hover:underline underline-offset-2'
+				>
+					{row.getValue('quizTitle')}
+				</Link>
 			);
 		},
 	},
@@ -72,51 +135,48 @@ export const columns: ColumnDef<QuizList>[] = [
 			</div>
 		),
 		enableHiding: false,
-		cell: ({ row }) => {
-			const quiz = row.original;
+		cell: ActionCell,
+		// 	cell: ({ row }) => {
+		// 		const quiz = row.original;
 
-			return (
-				<DropdownMenu>
-					<DropdownMenuTrigger asChild>
-						<Button
-							variant='ghost'
-							className='h-8 w-8 p-0'
-						>
-							<span className='sr-only'>Open menu</span>
-							<MoreHorizontal className='h-4 w-4' />
-						</Button>
-					</DropdownMenuTrigger>
-					<DropdownMenuContent align='end'>
-						<DropdownMenuLabel>Actions</DropdownMenuLabel>
-						<DropdownMenuItem>
-							<Link
-								href={`/quiz/${quiz.id}`}
-								className=''
-							>
-								View Quiz
-							</Link>
-						</DropdownMenuItem>
-						<DropdownMenuSeparator />
-						<DropdownMenuItem>
-							<Link
-								href={`/quiz/${quiz.id}/attempt`}
-								className=''
-							>
-								Attempt Quiz
-							</Link>
-						</DropdownMenuItem>
-						<DropdownMenuSeparator />
-						<DropdownMenuItem>
-							<Link
-								href={`/quiz/${quiz.id}/feedback`}
-								className=''
-							>
-								Check Feedback
-							</Link>
-						</DropdownMenuItem>
-					</DropdownMenuContent>
-				</DropdownMenu>
-			);
-		},
+		// 		return (
+		// 			<DropdownMenu>
+		// 				<DropdownMenuTrigger asChild>
+		// 					<Button
+		// 						variant='ghost'
+		// 						className='h-8 w-8 p-0'
+		// 					>
+		// 						<span className='sr-only'>Open menu</span>
+		// 						<MoreHorizontal className='h-4 w-4' />
+		// 					</Button>
+		// 				</DropdownMenuTrigger>
+		// 				<DropdownMenuContent align='end'>
+		// 					<DropdownMenuLabel>Actions</DropdownMenuLabel>
+		// 					<DropdownMenuItem>
+		// 						<Link
+		// 							href={`/quiz/${quiz.id}`}
+		// 							className=''
+		// 						>
+		// 							View Quiz
+		// 						</Link>
+		// 					</DropdownMenuItem>
+		// 					<DropdownMenuSeparator />
+		// 					<DropdownMenuItem>
+		// 						<Link href={`/quiz/${quiz.id}`}>Attempt Quiz</Link>
+		// 					</DropdownMenuItem>
+		// 					<DropdownMenuSeparator />
+		// 					<DropdownMenuItem>
+		// 						<Link
+		// 							href={`/quiz/${quiz.id}/feedback`}
+		// 							className=''
+		// 						>
+		// 							Check Feedback
+		// 						</Link>
+		// 					</DropdownMenuItem>
+		// 				</DropdownMenuContent>
+		// 			</DropdownMenu>
+		// 		);
+		// 	},
+		// },
 	},
 ];

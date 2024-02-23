@@ -5,7 +5,6 @@ import { useForm } from 'react-hook-form';
 
 import { fetchDocuments } from '@/components/actions/fetch-document';
 import { QuizGenerate, createQuiz } from '@/components/actions/quiz';
-import { useFileUploadStore } from '@/components/fileupload-store';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -22,6 +21,7 @@ import { MultiSelect, OptionType } from '@/components/ui/multiselect';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
 import { QUERY_KEY } from '@/lib/constants';
+import { useFileUploadStore } from '@/store/fileupload-store';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
@@ -61,12 +61,11 @@ export function QuizeForm() {
 
 	const document = data?.pages.flatMap((page) => page.data)[0];
 
-	const documents: OptionType[] = document.data.map(
-		(item: { id: string; file_name: string }) => ({
+	const documents: OptionType[] =
+		document?.data.map((item: { id: string; file_name: string }) => ({
 			value: item.id,
 			label: item.file_name,
-		})
-	);
+		})) ?? [];
 
 	async function onSubmit(data: QuizGenerateRequest) {
 		try {
@@ -92,7 +91,7 @@ export function QuizeForm() {
 			toast('Quiz Generated Successfully', {
 				description: data.quizTitle,
 			});
-
+			form.reset();
 			router.push(`/quiz`);
 		} catch (error) {
 			console.log('Error', error);
