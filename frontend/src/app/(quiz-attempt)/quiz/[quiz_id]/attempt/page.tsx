@@ -19,19 +19,6 @@ export default function QuizAttemp({ params }: QuizAttempProps) {
 					<CountdownClock />
 
 					<QuizQuestion />
-
-					{/* <div className='flex items-center justify-center w-full space-x-4 md:space-x-6 lg:space-x-8'>
-						<QuizProgress
-							currentQuestion={5}
-							totalQuestions={10}
-						/>
-						<Button
-							className='px-6 md:px-8 lg:px-10 h-9'
-							size='default'
-						>
-							Continue
-						</Button>
-					</div> */}
 				</div>
 			</MaxWidthWrapper>
 		</>

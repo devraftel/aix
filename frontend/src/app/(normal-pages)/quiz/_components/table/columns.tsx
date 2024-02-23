@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { ColumnDef } from '@tanstack/react-table';
 import { MoreHorizontal, Settings } from 'lucide-react';
+import Link from 'next/link';
 
 export type Payment = {
 	id: string;
@@ -58,7 +59,7 @@ export const columns: ColumnDef<Payment>[] = [
 		),
 		enableHiding: false,
 		cell: ({ row }) => {
-			const payment = row.original;
+			const quiz = row.original;
 
 			return (
 				<DropdownMenu>
@@ -73,13 +74,23 @@ export const columns: ColumnDef<Payment>[] = [
 					</DropdownMenuTrigger>
 					<DropdownMenuContent align='end'>
 						<DropdownMenuLabel>Actions</DropdownMenuLabel>
-						<DropdownMenuItem
-							onClick={() => navigator.clipboard.writeText(payment.id)}
-						>
-							Attempt Quiz
+						<DropdownMenuItem>
+							<Link
+								href={`/quiz/${quiz.id}/attempt`}
+								className=''
+							>
+								Attempt Quiz
+							</Link>
 						</DropdownMenuItem>
 						<DropdownMenuSeparator />
-						<DropdownMenuItem>View Feedback</DropdownMenuItem>
+						<DropdownMenuItem>
+							<Link
+								href={`/quiz/${quiz.id}/feedback`}
+								className=''
+							>
+								View Feedback
+							</Link>
+						</DropdownMenuItem>
 					</DropdownMenuContent>
 				</DropdownMenu>
 			);
