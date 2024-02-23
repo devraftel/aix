@@ -7,9 +7,10 @@ from uuid import UUID
 
 from app import crud
 from app.models.quiz_attempt_model import QuizAttempt, QuizAnswerSlot, QuizAnswerOption
+from app.models.quiz_feedback_model import QuizQuestionFeedback
 from app.schemas.quiz_attempt_schema import IQuizAttemptCreate, IQuizAnswerSlotCreate, IQuizAnswerSlotRead
 
-from app.aisdk.grade_question import grade_open_text_question
+from app.openai_sdk.q_grade_feedback import grade_open_text_question, generate_single_select_mcq_feedback, generate_multi_mcq_feedback
 
 class CRUDQuizAttemptEngine:
     # 1. Create Quiz Attempt
@@ -81,6 +82,9 @@ class CRUDQuizAttemptEngine:
 
         # 3. Grade & Count
         # 3.1 Check if any Quiz Answer Slot is not graded
+        for quiz_answer_slot in quiz_active_attempt.quiz_answers:
+            if not quiz_answer_slot.points_awarded:
+                await crud.quiz_answer_slot.grade_quiz_answer_slot(db_session=db_session, quiz_answer_slot=quiz_answer_slot)
         # ...
 
             # 4. Calculate the total score
@@ -144,6 +148,17 @@ class CRUDQuizAnswerSlotEngine:
                 else:
                     quiz_answer_slot.points_awarded = 0
 
+                # Generate feedback
+                quiz_question_feedback = generate_single_select_mcq_feedback(question = question.question_text, options = question.mcq_options, total_points = question.points,
+                        correct_option=next((option.option_text for option in question.mcq_options if option.is_correct)),
+                        selected_option=next((option.option_text for option in question.mcq_options if option.id == selected_option_id))
+                )
+                print("\n-----single_select_mcq\nquiz_question_feedback----\n", quiz_question_feedback)
+                quiz_answer_slot.quiz_question_feedback = QuizQuestionFeedback(
+                    feedback_text=quiz_question_feedback['reason'],
+                    question_id=quiz_answer_slot.question_id
+                )
+
                 db_session.add(quiz_answer_slot)
                 await db_session.commit()
 
@@ -151,13 +166,16 @@ class CRUDQuizAnswerSlotEngine:
             if quiz_answer_slot.question_type == "multi_select_mcq":
                 # Get the correct answer
                 selected_option_ids = [option.option_id for option in quiz_answer_slot.selected_options]
-                correct_option_ids = [option.id for option in question.mcq_options if option.is_correct]
-
-                if selected_option_ids == correct_option_ids:
-                    quiz_answer_slot.points_awarded = question.points
-                else:
-                    quiz_answer_slot.points_awarded = 0
+                # Generate feedback
+                quiz_question_feedback = generate_multi_mcq_feedback(question = question.question_text, options = question.mcq_options, total_points = question.points, 
+                                                                     correct_options=[option.option_text for option in question.mcq_options if option.is_correct], 
+                                                                     selected_options=[option.option_text for option in question.mcq_options if option.id in selected_option_ids])
                 
+                print("\n-----multi_select_mcq\nquiz_question_feedback----\n", quiz_question_feedback)
+
+                quiz_answer_slot.points_awarded = quiz_question_feedback['points_awarded']
+
+                quiz_answer_slot.quiz_question_feedback = QuizQuestionFeedback(feedback_text=quiz_question_feedback['reason'], question_id=quiz_answer_slot.question_id)
                 db_session.add(quiz_answer_slot)
                 await db_session.commit()
             
@@ -165,12 +183,12 @@ class CRUDQuizAnswerSlotEngine:
             if quiz_answer_slot.question_type == "open_text_question":
                 # AI pipeline to evaluate the answer and grade it
                 response = grade_open_text_question(question.question_text, question.correct_answer, quiz_answer_slot.answer_text, question.points)
-                print("\n-----response----\n", response, type(response))
-                print("\n-----response['points_awarded']----\n", response['points_awarded'])
+
+                print("\n-----open_text_question\nOpenAI Grading Response----\n", response)
 
                 quiz_answer_slot.points_awarded = response['points_awarded']
 
-                print("\n-----quiz_answer_slot.points_awarded----\n", quiz_answer_slot)
+                quiz_answer_slot.quiz_question_feedback = QuizQuestionFeedback(feedback_text = response['reason'], question_id = quiz_answer_slot.question_id)
                 
                 db_session.add(quiz_answer_slot)
                 await db_session.commit()
