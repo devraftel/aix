@@ -65,7 +65,7 @@ export const QuizOpentextQuestion = ({
 			}
 
 			console.log('Answer submitted:', res.data);
-
+			form.reset();
 			handleSubmit();
 		} catch (error) {
 			console.error('Error submitting answer:', error);

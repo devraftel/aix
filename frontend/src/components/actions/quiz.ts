@@ -279,7 +279,6 @@ export async function submitAnswer({
 		quiz_attempt_id: attemptId,
 		question_id: questionId,
 		question_type: questionType,
-		answer_text: answerText,
 	};
 
 	if (
@@ -289,9 +288,16 @@ export async function submitAnswer({
 		payload.selected_options_ids = selectedOptions;
 	}
 
+	if (questionType === 'open_text_question') {
+		payload.answer_text = answerText;
+	}
+
+	console.log('Submitting answer', payload);
+
 	const response = await fetch(`${baseUrl}/quiz-attempt/answer_slot/save`, {
 		method: 'POST',
 		headers: {
+			'Content-Type': 'application/json',
 			Authorization: `Bearer ${sessionId}`,
 		},
 		body: JSON.stringify(payload),

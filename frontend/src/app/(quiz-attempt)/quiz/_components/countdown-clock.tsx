@@ -2,11 +2,13 @@
 
 import { submitQuiz } from '@/components/actions/quiz';
 import { useQuizAttemptStore } from '@/store/quiz-attempt-store';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 export function CountdownClock() {
 	const { quizAttempt, reset } = useQuizAttemptStore();
 	const [remainingTime, setRemainingTime] = useState(0);
+	const router = useRouter();
 
 	useEffect(() => {
 		if (!quizAttempt) {
@@ -38,13 +40,14 @@ export function CountdownClock() {
 					console.error('Error submitting quiz:', res.error);
 				} else if (res.data) {
 					console.log('Quiz submitted:', res.data);
+					router.push(`/quiz/${quizAttempt.quiz_id}`);
 					reset();
 				}
 			}
 		}, 1000);
 
 		return () => clearInterval(intervalId);
-	}, [quizAttempt, reset]);
+	}, [quizAttempt, reset, router]);
 
 	if (!quizAttempt || remainingTime <= 0) {
 		return null;

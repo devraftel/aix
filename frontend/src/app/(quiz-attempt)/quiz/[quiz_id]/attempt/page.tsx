@@ -45,8 +45,15 @@ export default function QuizAttemp({ params }: QuizAttempProps) {
 			toast('Quiz Completed', { description: 'Quiz has been submitted' });
 			submitQuiz(quizAttempt?.id!);
 			reset();
+			router.push('/quiz');
 		}
-	}, [currentQuestionIndex, quizAttempt, reset, setCurrentQuestionIndex]);
+	}, [
+		currentQuestionIndex,
+		quizAttempt,
+		reset,
+		setCurrentQuestionIndex,
+		router,
+	]);
 
 	useEffect(() => {
 		if (data?.data) setQuizAttempt(data?.data);
