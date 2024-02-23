@@ -50,7 +50,7 @@ class QuizAnswerSlotBase(SQLModel):
 
 class QuizAnswerSlot(BaseUUIDModel, QuizAnswerSlotBase, table=True):
     
-    points_awarded: int | None = Field(default=None)
+    points_awarded: float | None = Field(default=None)
     quiz_question_feedback_id: UUID | None = Field(default=None, foreign_key="QuizQuestionFeedback.id")
     
     quiz_attempt: "QuizAttempt" = Relationship(back_populates="quiz_answers")
