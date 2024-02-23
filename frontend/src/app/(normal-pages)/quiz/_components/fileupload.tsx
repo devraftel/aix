@@ -45,8 +45,6 @@ export const FileUpload = () => {
 
 	const { closeDrawer } = useFileUploadStore();
 
-	// const user = useUser();
-
 	const form = useForm<z.infer<typeof formSchema>>({
 		resolver: zodResolver(formSchema),
 		defaultValues: {
@@ -54,94 +52,9 @@ export const FileUpload = () => {
 		},
 	});
 
-	// async function onSubmit(values: z.infer<typeof formSchema>) {
-	// 	setIsUploading(true);
-	// 	setUploadProgress(0);
-
-	// 	values.pdf.forEach(async (file, index) => {
-	// 		try {
-	// 			const formData = new FormData();
-	// 			formData.append('file', file.file);
-	// 			// const response = await fetch(`${baseUrl}/user_file/${user.user?.id}`, {
-	// 			// 	method: 'POST',
-	// 			// 	headers: {
-	// 			// 		Authorization: `Bearer ${session.session?.id}`,
-	// 			// 	},
-	// 			// 	body: formData,
-	// 			// });
-
-	// 			// console.log(response.status, response.statusText);
-
-	// 			// if (!response.ok) {
-	// 			// 	toast(`File upload failed.`, {
-	// 			// 		description: `Your file ${file.file.name} failed to upload.`,
-	// 			// 		closeButton: true,
-	// 			// 	});
-
-	// 			// 	throw new Error('File upload failed');
-	// 			// }
-
-	// 			const res = await uploadDocument(formData);
-
-	// 			if (res.error) {
-	// 				toast(`File upload failed.`, {
-	// 					description: `Your file ${file.file.name} failed to upload.`,
-	// 					closeButton: true,
-	// 				});
-
-	// 				return;
-	// 				throw new Error('File upload failed');
-	// 			}
-
-	// 			console.log(res.data);
-
-	// 			setUploadProgress(
-	// 				(prevProgress) => prevProgress + 100 / values.pdf.length
-	// 			);
-
-	// 			toast(`File Uploaded successfully.`, {
-	// 				description: `Your file ${file.file.name} has been uploaded successfully.`,
-	// 				closeButton: true,
-	// 			});
-
-	// 			if (index === values.pdf.length - 1) {
-	// 				setIsUploading(false);
-	// 				closeDrawer();
-	// 			}
-	// 		} catch (error) {
-	// 			console.log(error);
-	// 			toast(`File upload failed.`, {
-	// 				description: `Your file ${file.file.name} could not be uploaded.`,
-	// 				closeButton: true,
-	// 			});
-	// 		}
-
-	// 		// setTimeout(() => {
-	// 		// 	setUploadProgress(
-	// 		// 		(prevProgress) => prevProgress + 100 / values.pdf.length
-	// 		// 	);
-
-	// 		// 	toast(`File Uploaded successfully.`, {
-	// 		// 		description: `Your file ${file.file.name} has been uploaded successfully.`,
-	// 		// 		closeButton: true,
-	// 		// 	});
-
-	// 		// 	if (index === values.pdf.length - 1) {
-	// 		// 		setIsUploading(false);
-	// 		// 		closeDrawer();
-	// 		// 	}
-	// 		// }, index * 500);
-	// 	});
-
-	// 	// console.log(values);
-	// }
-
 	return (
 		<Form {...form}>
-			<form
-				// onSubmit={form.handleSubmit(onSubmit)}
-				className='space-y-8 w-full max-w-md'
-			>
+			<form className='space-y-8 w-full max-w-md'>
 				<FormField
 					control={form.control}
 					name='pdf'
@@ -222,21 +135,11 @@ export const FileUpload = () => {
 									</label>
 								</div>
 							</FormControl>
-							{/* <FormDescription>
-								Upload the files you want to create a quiz from.
-							</FormDescription> */}
+
 							<FormMessage />
 						</FormItem>
 					)}
 				/>
-				{/* <Button
-					className='w-full'
-					type='submit'
-					disabled={isUploading || form.formState.isSubmitting}
-					isLoading={isUploading || form.formState.isSubmitting}
-				>
-					Upload Files
-				</Button> */}
 			</form>
 			{isUploading && <div>Uploading: {uploadProgress}%</div>}
 		</Form>
