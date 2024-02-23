@@ -17,8 +17,8 @@ engine = create_async_engine(
     str(settings.ASYNC_DATABASE_URI),
     echo=False,
     future=True,
-    # pool_size=POOL_SIZE,
-    # max_overflow=64,
+    pool_size=POOL_SIZE,
+    max_overflow=64,
     poolclass=NullPool
     if settings.MODE == ModeEnum.testing
     else QueuePool,  # Asincio pytest works with NullPool

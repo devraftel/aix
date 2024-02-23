@@ -16,7 +16,7 @@ class IQuizCreate(QuizBase):
         json_schema_extra = {
             "example": {
                 "title": "Quiz 1",
-                "time_limit": "0:30:00",
+                "time_limit": "PT30M",
                 "total_points": 100,
                 "total_questions_count": 10,
                 "user_file_ids": ["e3e4c3e1-1e4c-4e3e-8e1e-4c3e1e4c3e1e"]
@@ -50,12 +50,10 @@ class IQuizRemove(SQLModel):
 
 class IPaginatedQuizList(SQLModel):
     total: int
-    next_page: int | None
-    prev_page: int | None
+    next_page: str | None
+    prev_page: str | None
 
     data: list[IQuizRead]
-    skip: int | None = 0
-    limit: int | None = 8
 
 
 class IGenerateQuiz(SQLModel):
@@ -66,6 +64,23 @@ class IGenerateQuiz(SQLModel):
     difficulty: QuestionDifficultyEnum
     user_prompt: str | None = None
     file_ids: list[UUID] | None = None
+
+    class Config:
+        {
+            "example": {
+                "title": "Forward",
+                "time_limit": "PT30M",
+                "total_questions_to_generate": 10,
+                "difficulty": "easy",
+                "questions_type": [
+                    "single_select_mcq",
+                    "open_text_question"
+                ],
+                "user_prompt": "",
+                "user_file_ids": ["e3e4c3e1-1e4c-4e3e-8e1e-4c3e1e4c3e1e"]
+            }
+
+        }
 
     @field_validator('time_limit')
     def check_time_limit(cls, value):
