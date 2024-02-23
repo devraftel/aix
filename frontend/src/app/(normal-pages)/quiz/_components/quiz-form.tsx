@@ -94,7 +94,7 @@ const FormSchema = z.object({
 });
 
 export function QuizeForm() {
-	const { openDrawer } = useFileUploadStore();
+	const { isDrawerOpen, setIsDrawerOpen } = useFileUploadStore();
 	const form = useForm<z.infer<typeof FormSchema>>({
 		resolver: zodResolver(FormSchema),
 		defaultValues: {
@@ -188,7 +188,7 @@ export function QuizeForm() {
 									className='font-semibold text-gray-500 hover:underline p-0 h-fit'
 									variant={'link'}
 									type='button'
-									onClick={openDrawer}
+									onClick={() => setIsDrawerOpen(!isDrawerOpen)}
 								>
 									Upload a new document
 								</Button>

@@ -43,7 +43,7 @@ export const FileUpload = () => {
 	const [uploadProgress, setUploadProgress] = useState(0);
 	const [isUploading, setIsUploading] = useState(false);
 
-	const { closeDrawer } = useFileUploadStore();
+	const { isDrawerOpen, setIsDrawerOpen } = useFileUploadStore();
 
 	const form = useForm<z.infer<typeof formSchema>>({
 		resolver: zodResolver(formSchema),
@@ -105,6 +105,7 @@ export const FileUpload = () => {
 																description: `Your file ${file.file.name} failed to upload.`,
 																closeButton: true,
 															});
+															setIsUploading(false);
 															return;
 														}
 
@@ -120,7 +121,7 @@ export const FileUpload = () => {
 
 														if (index === files.length - 1) {
 															setIsUploading(false);
-															closeDrawer();
+															setIsDrawerOpen(!isDrawerOpen);
 														}
 													} catch (error) {
 														console.log(error);
@@ -128,6 +129,8 @@ export const FileUpload = () => {
 															description: `Your file ${file.file.name} could not be uploaded.`,
 															closeButton: true,
 														});
+													} finally {
+														setIsUploading(false);
 													}
 												});
 											}}
@@ -147,9 +150,15 @@ export const FileUpload = () => {
 };
 
 export function DrawerDemo() {
-	const { isDrawerOpen } = useFileUploadStore();
+	const { isDrawerOpen, setIsDrawerOpen } = useFileUploadStore();
 	return (
-		<Drawer open={isDrawerOpen}>
+		<Drawer
+			open={isDrawerOpen}
+			onOpenChange={setIsDrawerOpen}
+			onClose={() => {
+				setIsDrawerOpen(false);
+			}}
+		>
 			<DrawerContent className='flex flex-col items-center pb-5 md:pb-10'>
 				<DrawerHeader>
 					<DrawerTitle>Add new files</DrawerTitle>
