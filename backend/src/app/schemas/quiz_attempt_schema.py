@@ -42,6 +42,7 @@ class QuizAttemptQuestions(SQLModel):
 class IQuizAttemptCreateResponse(SQLModel):
     id: UUID
     user_id: str
+    quiz_title: str
     quiz_id: UUID
     time_limit: timedelta
     time_start: datetime

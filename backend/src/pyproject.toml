@@ -68,6 +68,7 @@ fastapi-limiter = "^0.1.5"
 pyjwt = {extras = ["crypto"], version = "^2.8.0"}
 sqlmodel = "^0.0.16"
 python-jose = "^3.3.0"
+asyncio = "^3.4.3"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.1.0"

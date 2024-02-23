@@ -41,7 +41,7 @@ async def create_quiz_attempt(
         await db_session.commit()
 
         # prep the response IQuizAttemptCreateResponse
-        quiz_attempt_response = IQuizAttemptCreateResponse(id=quiz_attempt_response.id, user_id=quiz_attempt_response.user_id, quiz_id=quiz_attempt_response.quiz_id, time_limit=quiz_attempt_response.time_limit, time_start=quiz_attempt_response.time_start, total_points=quiz_attempt_response.total_points, questions=quiz_questions)
+        quiz_attempt_response = IQuizAttemptCreateResponse(id=quiz_attempt_response.id, user_id=quiz_attempt_response.user_id, quiz_title=quiz.title, quiz_id=quiz_attempt_response.quiz_id, time_limit=quiz_attempt_response.time_limit, time_start=quiz_attempt_response.time_start, total_points=quiz_attempt_response.total_points, questions=quiz_questions)
         return quiz_attempt_response
 
     except ValueError as e:
@@ -125,3 +125,23 @@ async def save_quiz_answer_slot(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
+# API to view graded Quiz + feedback of each question, selected and correct answers
+@router.get("/{quiz_attempt_id}/graded")
+async def get_graded_quiz_attempt_by_id(        
+    # user_id: Annotated[str, Depends(clerk_auth.get_session_details)],
+    quiz_attempt_id: UUID, 
+    db_session: Annotated[AsyncSession, Depends(get_db)]):
+    """
+    Gets a Graded Quiz Attempt by its id
+    """
+    try:
+        quiz_attempt = await crud.quiz_attempt.graded_quiz_attempt_by_id(db_session, quiz_attempt_id)
+        print("\n------------ ============ ------------\n")
+        print("\n------------ quiz_attempt ------------\n\n", quiz_attempt)
+        print("\n\n------------ ============ ------------\n")
+        return quiz_attempt
+
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
