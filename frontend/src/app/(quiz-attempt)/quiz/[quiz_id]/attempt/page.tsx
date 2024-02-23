@@ -73,6 +73,8 @@ export default function QuizAttemp({ params }: QuizAttempProps) {
 	}
 
 	const currentQuestion = quizAttempt?.questions[currentQuestionIndex];
+	const isLastQuestion =
+		currentQuestionIndex === quizAttempt?.questions.length! - 1;
 
 	return (
 		<>
@@ -91,6 +93,7 @@ export default function QuizAttemp({ params }: QuizAttempProps) {
 							total_questions={quizAttempt?.questions.length!}
 							current_question={currentQuestionIndex + 1}
 							handleSubmit={handleQuestionSubmit}
+							isLastQuestion={isLastQuestion}
 						/>
 					)}
 
@@ -104,6 +107,7 @@ export default function QuizAttemp({ params }: QuizAttempProps) {
 							total_questions={quizAttempt?.questions.length!}
 							current_question={currentQuestionIndex + 1}
 							handleSubmit={handleQuestionSubmit}
+							isLastQuestion={isLastQuestion}
 						/>
 					)}
 
@@ -117,6 +121,7 @@ export default function QuizAttemp({ params }: QuizAttempProps) {
 							total_questions={quizAttempt?.questions.length!}
 							current_question={currentQuestionIndex + 1}
 							handleSubmit={handleQuestionSubmit}
+							isLastQuestion={isLastQuestion}
 						/>
 					)}
 				</div>

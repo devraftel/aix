@@ -11,6 +11,7 @@ import {
 	FormMessage,
 } from '@/components/ui/form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { QuizProgress } from './quiz-progress';
@@ -30,6 +31,7 @@ interface Props {
 	handleSubmit: () => void;
 	attempt_id: string;
 	question_id: string;
+	isLastQuestion: boolean;
 }
 
 export const QuizMultiselectQuestion = ({
@@ -41,7 +43,10 @@ export const QuizMultiselectQuestion = ({
 	handleSubmit,
 	attempt_id,
 	question_id,
+	isLastQuestion,
 }: Props) => {
+	const [isLoading, setIsLoading] = useState<boolean>(false);
+
 	const FormSchema = z.object({
 		selectedOptions: z.array(
 			z.string({ required_error: 'You need to select at least one option.' })
@@ -56,6 +61,7 @@ export const QuizMultiselectQuestion = ({
 
 	async function onSubmit(data: z.infer<typeof FormSchema>) {
 		try {
+			setIsLoading(true);
 			const res = await submitA({
 				attemptId: attempt_id,
 				questionType: question_type,
@@ -73,6 +79,8 @@ export const QuizMultiselectQuestion = ({
 			handleSubmit();
 		} catch (error) {
 			console.error('Error submitting answer:', error);
+		} finally {
+			setIsLoading(false);
 		}
 	}
 
@@ -138,9 +146,10 @@ export const QuizMultiselectQuestion = ({
 							className='px-6 md:px-8 lg:px-10 h-9'
 							size='default'
 							type='submit'
-							disabled={!form.formState.isValid}
+							disabled={!form.formState.isValid || isLoading}
+							isLoading={isLoading || form.formState.isSubmitting}
 						>
-							Continue
+							{isLastQuestion ? 'Submit Quiz' : 'Next Question'}
 						</Button>
 					</div>
 				</form>

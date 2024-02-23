@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/form';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { QuizProgress } from './quiz-progress';
@@ -30,6 +31,7 @@ interface Props {
 	handleSubmit: () => void;
 	attempt_id: string;
 	question_id: string;
+	isLastQuestion: boolean;
 }
 
 export const QuizSingleSelectQuestion = ({
@@ -41,7 +43,10 @@ export const QuizSingleSelectQuestion = ({
 	handleSubmit,
 	attempt_id,
 	question_id,
+	isLastQuestion,
 }: Props) => {
+	const [isLoading, setIsLoading] = useState<boolean>(false);
+
 	const FormSchema = z.object({
 		selectedOption: z.enum(
 			[
@@ -61,9 +66,8 @@ export const QuizSingleSelectQuestion = ({
 	});
 
 	async function onSubmit(data: z.infer<typeof FormSchema>) {
-		// handleSubmit();
-		// console.log(data);
 		try {
+			setIsLoading(true);
 			const res = await submitA({
 				attemptId: attempt_id,
 				questionType: question_type,
@@ -81,6 +85,8 @@ export const QuizSingleSelectQuestion = ({
 			handleSubmit();
 		} catch (error) {
 			console.error('Error submitting answer:', error);
+		} finally {
+			setIsLoading(false);
 		}
 	}
 
@@ -135,9 +141,10 @@ export const QuizSingleSelectQuestion = ({
 							className='px-6 md:px-8 lg:px-10 h-9'
 							size='default'
 							type='submit'
-							disabled={!form.formState.isValid}
+							disabled={!form.formState.isValid || isLoading}
+							isLoading={isLoading || form.formState.isSubmitting}
 						>
-							Continue
+							{isLastQuestion ? 'Submit Quiz' : 'Next Question'}
 						</Button>
 					</div>
 				</form>

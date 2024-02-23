@@ -392,3 +392,151 @@ export async function deleteQuiz(quizId: string): Promise<{ error?: string }> {
 
 	return {};
 }
+
+export const quizFeedback = async (
+	quizId: string
+): Promise<{
+	data?: any;
+	error?: string;
+}> => {
+	if (!quizId) {
+		return { error: 'Quiz ID is required to get feedback.' };
+	}
+
+	return { data: dummyfeedback };
+
+	const { userId, sessionId } = auth();
+	if (!userId) {
+		return { error: 'User is not logged in' };
+	}
+
+	const baseUrl = getBaseURL();
+
+	const response = await fetch(`${baseUrl}/quiz/${quizId}/feedback`, {
+		method: 'GET',
+		headers: {
+			Authorization: `Bearer ${sessionId}`,
+		},
+	});
+
+	if (!response.ok) {
+		console.log(
+			'GET /quiz/:id/feedback failed',
+			response.status,
+			response.statusText
+		);
+		return { error: 'Unable to get quiz feedback' };
+	}
+
+	const json = await response.json();
+
+	console.log('GET /quiz/:id/feedback success', json);
+
+	return { data: dummyfeedback };
+};
+
+const dummyfeedback = {
+	time_start: '2024-02-23T09:22:13.113516',
+	total_points: 4,
+	time_finish: '2024-02-23T09:27:52.873690',
+	time_limit: 'PT300S',
+	attempt_score: 2.4,
+	attempt_id: '018dd545-b9fc-7f13-ab6d-d6d07716dba4',
+	quiz_id: '018dd545-5a90-786d-9991-7f5414eeecdc',
+	attempted_questions: [
+		{
+			question_id: '018dd527-4843-7226-a76e-ef3fe1773a08',
+			question_text: 'What is Generative AI?',
+			question_type: 'single_select_mcq',
+			points: 1,
+			points_awarded: 1.0,
+			feedback_text:
+				'Great job! The selected option correctly defines Generative AI as a type of machine learning that generates new content. Keep up the good work!',
+			answer_text: null,
+			mcq_options: [
+				{
+					option_id: '018dd527-4842-74ea-a2a9-0e661bd165a5',
+					option_text: 'A type of machine learning that detects anomalies',
+					is_correct: false,
+					selected_option: false,
+				},
+				{
+					option_id: '018dd527-4842-710a-9d78-91b12b604136',
+					option_text: 'A type of machine learning that optimizes algorithms',
+					is_correct: false,
+					selected_option: false,
+				},
+				{
+					option_id: '018dd527-4841-7e4d-813b-3a20098e3b62',
+					option_text: 'A type of machine learning that classifies data',
+					is_correct: false,
+					selected_option: false,
+				},
+				{
+					option_id: '018dd527-4841-78fe-a0be-d28a38fef33c',
+					option_text: 'A type of machine learning that generates new content',
+					is_correct: true,
+					selected_option: true,
+				},
+			],
+		},
+		{
+			question_id: '018dd545-68f4-7f09-8ea2-4576e2f49eff',
+			question_text: 'Select All Incorrect About Generative AI?',
+			question_type: 'multi_select_mcq',
+			points: 1,
+			points_awarded: 0.0,
+			feedback_text:
+				"The attempted options are partially correct. The question requires the selection of the incorrect statements about generative AI. The option 'A type of machine learning that classifies data' is the only correct statement, the other selected options are also describing types of machine learning, not generative AI specifically. Please review the characteristics of generative AI to better understand and identify its unique features.",
+			answer_text: null,
+			mcq_options: [
+				{
+					option_id: '018dd545-68f4-77c4-9cb3-6528610c6373',
+					option_text: 'A type of machine learning that detects anomalies',
+					is_correct: true,
+					selected_option: true,
+				},
+				{
+					option_id: '018dd545-68f4-7434-afc6-18d947828582',
+					option_text: 'A type of machine learning that optimizes algorithms',
+					is_correct: true,
+					selected_option: true,
+				},
+				{
+					option_id: '018dd545-68f4-7092-9179-d3bda2a0c3b5',
+					option_text: 'A type of machine learning that classifies data',
+					is_correct: true,
+					selected_option: false,
+				},
+				{
+					option_id: '018dd545-68f3-7b79-b7ba-4ae3610aecaf',
+					option_text: 'A type of machine learning that generates new content',
+					is_correct: false,
+					selected_option: false,
+				},
+			],
+		},
+		{
+			question_id: '018dd545-68f2-7952-9172-3f3707e98a24',
+			question_text: 'What is Generative AI?',
+			question_type: 'open_text_question',
+			points: 1,
+			points_awarded: 0.9,
+			feedback_text:
+				'The attempted answer captures the essence of Generative AI but lacks specificity regarding the type of content it can create, as mentioned in the correct answer.',
+			answer_text: 'AI that generates content',
+			mcq_options: [],
+		},
+		{
+			question_id: '018dd545-68f3-7164-9740-7a7dfe01329a',
+			question_text: 'What is Prompt Engineering for Generative AI?',
+			question_type: 'open_text_question',
+			points: 1,
+			points_awarded: 0.5,
+			feedback_text:
+				'The attempted answer captures the general idea of prompt engineering for generative AI but lacks the specific details and depth mentioned in the correct answer. It does not fully convey the blend of art and science required, nor does it touch on the need to understand AI capabilities and craft precise queries.',
+			answer_text: 'Art of talking with llms to generate content',
+			mcq_options: [],
+		},
+	],
+};

@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/form';
 import { Textarea } from '@/components/ui/textarea';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { QuizProgress } from './quiz-progress';
@@ -30,6 +31,7 @@ interface Props {
 	handleSubmit: () => void;
 	attempt_id: string;
 	question_id: string;
+	isLastQuestion: boolean;
 }
 
 export const QuizOpentextQuestion = ({
@@ -40,7 +42,9 @@ export const QuizOpentextQuestion = ({
 	handleSubmit,
 	attempt_id,
 	question_id,
+	isLastQuestion,
 }: Props) => {
+	const [isLoading, setIsLoading] = useState<boolean>(false);
 	const FormSchema = z.object({
 		freeformAnswer: z.string({
 			required_error: 'You need to provide an answer.',
@@ -52,6 +56,7 @@ export const QuizOpentextQuestion = ({
 
 	async function onSubmit(data: z.infer<typeof FormSchema>) {
 		try {
+			setIsLoading(true);
 			const res = await submitA({
 				attemptId: attempt_id,
 				questionType: question_type,
@@ -65,10 +70,13 @@ export const QuizOpentextQuestion = ({
 			}
 
 			console.log('Answer submitted:', res.data);
+			form.resetField('freeformAnswer');
 			form.reset();
 			handleSubmit();
 		} catch (error) {
 			console.error('Error submitting answer:', error);
+		} finally {
+			setIsLoading(false);
 		}
 	}
 
@@ -109,10 +117,10 @@ export const QuizOpentextQuestion = ({
 							className='px-6 md:px-8 lg:px-10 h-9'
 							size='default'
 							type='submit'
-							disabled={!form.formState.isValid}
-							isLoading={form.formState.isSubmitting}
+							disabled={!form.formState.isValid || isLoading}
+							isLoading={isLoading || form.formState.isSubmitting}
 						>
-							Continue
+							{isLastQuestion ? 'Submit Quiz' : 'Next Question'}
 						</Button>
 					</div>
 				</form>
