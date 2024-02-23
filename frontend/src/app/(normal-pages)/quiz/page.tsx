@@ -1,6 +1,5 @@
 import { getQuizList } from '@/components/actions/quiz';
 import MaxWidthWrapper from '@/components/max-width-wrapper';
-import dayjs from 'dayjs';
 import { QuizList } from './_components/table/columns';
 import { QuizListTable } from './_components/table/data-table';
 
@@ -14,22 +13,13 @@ export default async function QuizList() {
 	console.log('quizList', quizList);
 
 	const updatedList: QuizList[] = quizList.data.data.map((quiz) => {
-		const match = quiz.time_limit.match(/PT(\d+)S/);
-		let timeLimit = '';
-		if (match) {
-			// Convert the duration to a Date object
-			const date = dayjs.unix(Number(match[1]));
-
-			// Format the duration as a string
-			timeLimit = `${date.minute()} minutes`;
-		}
 		return {
 			id: quiz.id,
 			quizTitle: quiz.title,
 			totalQuestions: quiz.total_questions_count,
 			total_points: quiz.total_points,
 			status: quiz?.has_user_attempted ? 'complete' : 'available',
-			time_limit: timeLimit,
+			time_limit: quiz?.time_limit,
 		};
 	});
 

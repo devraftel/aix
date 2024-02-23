@@ -25,9 +25,15 @@ export const columns: ColumnDef<QuizList>[] = [
 	{
 		accessorKey: 'quizTitle',
 		header: () => <div className='text-left'>Title</div>,
-		cell: ({ row }) => (
-			<div className='capitalize'>{row.getValue('quizTitle')}</div>
-		),
+		cell: ({ row }) => {
+			return (
+				<div className='capitalize hover:underline underline-offset-2'>
+					<Link href={`/quiz/${row.original.id}`}>
+						{row.getValue('quizTitle')}
+					</Link>
+				</div>
+			);
+		},
 	},
 	{
 		accessorKey: 'totalQuestions',
@@ -84,6 +90,15 @@ export const columns: ColumnDef<QuizList>[] = [
 						<DropdownMenuLabel>Actions</DropdownMenuLabel>
 						<DropdownMenuItem>
 							<Link
+								href={`/quiz/${quiz.id}`}
+								className=''
+							>
+								View Quiz
+							</Link>
+						</DropdownMenuItem>
+						<DropdownMenuSeparator />
+						<DropdownMenuItem>
+							<Link
 								href={`/quiz/${quiz.id}/attempt`}
 								className=''
 							>
@@ -96,7 +111,7 @@ export const columns: ColumnDef<QuizList>[] = [
 								href={`/quiz/${quiz.id}/feedback`}
 								className=''
 							>
-								View Feedback
+								Check Feedback
 							</Link>
 						</DropdownMenuItem>
 					</DropdownMenuContent>

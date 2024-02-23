@@ -3,7 +3,7 @@ import { currentUser } from '@clerk/nextjs';
 import { X } from 'lucide-react';
 import Link from 'next/link';
 
-export const QuizTopBar = async () => {
+export const QuizTopBar = async ({ title }: { title: string }) => {
 	const user = await currentUser();
 
 	return (
@@ -17,7 +17,7 @@ export const QuizTopBar = async () => {
 
 			{/* Quiz Title */}
 			<div className='flex-1 font-bold text-left md:text-center text-sm lg:text-base'>
-				Quiz: Compose
+				Quiz: {title}
 			</div>
 
 			{/* Exit Button */}

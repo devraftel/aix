@@ -1,6 +1,7 @@
 'use server';
 import { DifficultyLevel } from '@/app/(normal-pages)/quiz/_components/utils';
 import { getBaseURL } from '@/lib/utils';
+import dayjs from 'dayjs';
 
 import { auth } from '@clerk/nextjs';
 
@@ -101,5 +102,74 @@ export async function getQuizList(): Promise<{
 
 	console.log('GET /quiz success', json);
 
+	json.data = json.data.map((quiz: QuizGenerateReponse) => {
+		const timeLimit = convertTime(quiz.time_limit);
+		console.log('Time Limit', timeLimit);
+		quiz.time_limit = timeLimit;
+		return quiz;
+	});
+
 	return { data: json };
 }
+
+export async function getQuiz(quizId: string): Promise<{
+	error?: string;
+	data?: QuizGenerateReponse;
+}> {
+	if (!quizId) {
+		return { error: 'Quiz ID is required to get a quiz.' };
+	}
+
+	const { userId, sessionId } = auth();
+	if (!userId) {
+		return { error: 'User is not logged in' };
+	}
+
+	const baseUrl = getBaseURL();
+
+	const response = await fetch(`${baseUrl}/quiz/${quizId}`, {
+		method: 'GET',
+		headers: {
+			Authorization: `Bearer ${sessionId}`,
+		},
+	});
+
+	if (!response.ok) {
+		console.log('GET /quiz/:id failed', response.status, response.statusText);
+		return {
+			error: 'Unable to get quiz',
+		};
+	}
+
+	const json = (await response.json()) as QuizGenerateReponse;
+
+	console.log('GET /quiz/:id success', json);
+
+	const timeLimit = convertTime(json.time_limit);
+
+	json.time_limit = timeLimit;
+
+	return { data: json };
+}
+
+const convertTime = (time: string) => {
+	let totalSeconds = 0;
+	const hoursMatch = time.match(/(\d+)H/);
+	const minutesMatch = time.match(/(\d+)M/);
+	const secondsMatch = time.match(/(\d+)S/);
+
+	if (hoursMatch) {
+		totalSeconds += Number(hoursMatch[1]) * 3600;
+	}
+
+	if (minutesMatch) {
+		totalSeconds += Number(minutesMatch[1]) * 60;
+	}
+
+	if (secondsMatch) {
+		totalSeconds += Number(secondsMatch[1]);
+	}
+
+	const date = dayjs.unix(totalSeconds);
+	return `${date.format('HH:mm:ss')}`;
+};
