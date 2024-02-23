@@ -8,10 +8,12 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { useDeleteQuizStore } from '@/store/delete-quiz';
 import { useQuizStartStore } from '@/store/quiz-start-store';
 import { ColumnDef, Row } from '@tanstack/react-table';
 import { MoreHorizontal, Settings } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 export type QuizList = {
 	id: string;
@@ -26,7 +28,8 @@ const ActionCell = ({ row }: { row: Row<QuizList> }) => {
 	const quiz = row.original;
 	const { isQuizStartOpen, setIsQuizStartOpen, setQuizId } =
 		useQuizStartStore();
-
+	const { isDeleteQuizOpen, setIsDeleteQuizOpen } = useDeleteQuizStore();
+	const router = useRouter();
 	return (
 		<DropdownMenu>
 			<DropdownMenuTrigger asChild>
@@ -65,6 +68,15 @@ const ActionCell = ({ row }: { row: Row<QuizList> }) => {
 					>
 						Check Feedback
 					</Link>
+				</DropdownMenuItem>
+				<DropdownMenuSeparator />
+				<DropdownMenuItem
+					onClick={() => {
+						router.push(`/quiz?delete=${quiz.id}`);
+						setIsDeleteQuizOpen(!isDeleteQuizOpen);
+					}}
+				>
+					Delete Quiz
 				</DropdownMenuItem>
 			</DropdownMenuContent>
 		</DropdownMenu>

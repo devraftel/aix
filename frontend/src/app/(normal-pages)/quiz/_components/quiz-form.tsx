@@ -91,7 +91,7 @@ export function QuizeForm() {
 			toast('Quiz Generated Successfully', {
 				description: data.quizTitle,
 			});
-
+			form.reset();
 			router.push(`/quiz`);
 		} catch (error) {
 			console.log('Error', error);

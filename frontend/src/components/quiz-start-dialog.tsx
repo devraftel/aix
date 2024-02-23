@@ -50,7 +50,6 @@ export function QuizStartDialog() {
 					<Button
 						type='button'
 						className='w-full'
-						// disabled={!quizId || quizId !== id}
 						onClick={() => {
 							router.push(`/quiz/${quizId || id}/attempt`);
 							setIsQuizStartOpen(!isQuizStartOpen);
