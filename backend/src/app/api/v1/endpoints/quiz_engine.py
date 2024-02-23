@@ -9,6 +9,7 @@ from app.api.deps import get_db
 from app.core.auth import clerk_auth
 from app.schemas.question_engine_schema import IBatchQuestionsCreate
 from app.schemas.quiz_engine_schema import (IQuizCreate, IQuizUpdate, IQuizRead, IPaginatedQuizList, IGenerateQuiz, IQuizRemove)
+from app.core.rag_pipeline import generate_questions_content_with_rag, generate_questions_with_ai
 
 # Mock Data
 from app.utils.mock.generated_questions import mock_generated_questions
@@ -136,16 +137,17 @@ async def generate_quiz_rag_ai_pipeline(
         quiz_obj = IQuizCreate(title=generate_quiz_data.title, user_id=user_id, time_limit=generate_quiz_data.time_limit, user_file_ids=generate_quiz_data.file_ids)
         quiz_in_db = await crud.quiz_engine.create_quiz(quiz_obj=quiz_obj, db_session=db_session)
 
-        # TODO: 1. RAG & AI PIPELINES
-        
         # 1.1 RAG PIPELINE TO GET QUESTIONS CONTENT
-        #      -> Take user Prompt and get prep the RAG query Structure - call OpenAI if needed
-        #      -> Get the Questions Content using selected file_ids & Query Structure
+        questions_content = await generate_questions_content_with_rag(
+            user_prompt=generate_quiz_data.user_prompt,
+            file_ids=generate_quiz_data.file_ids,
+            db_session=db_session  # Pass the DB session if needed for file retrieval
+        )
 
         # 1.2 AI PIPELINE TO GENERATE QUESTIONS
-        #      -> Take the Questions Content and Generate the Questions using OpenAI Assistant or Completions API
-                    # -> In GPT prompt we will get time_limit for each question to calculate total quiz_time_limit
-        generated_questions = mock_generated_questions
+        generated_questions = await generate_questions_with_ai(
+            questions_content=questions_content
+        )
 
         # 2. Add Questions to Quiz
         # 2.1 Sanitize and add Questions in Database
