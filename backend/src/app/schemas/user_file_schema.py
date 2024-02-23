@@ -9,9 +9,9 @@ from pydantic import validator
 class IUserFileCreate(UserFileBase):
     pass
 
-class IUserFileRead(UserFileBase):
+class IUserFileRead(SQLModel):
     id: UUID
-    created_at: datetime
+    file_name: str
   
 
 class IPaginatedUserFileList(SQLModel):

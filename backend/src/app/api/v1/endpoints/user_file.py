@@ -17,7 +17,7 @@ async def list_user_files(
         user_id: Annotated[str, Depends(clerk_auth.get_session_details)],
         db_session: Annotated[AsyncSession, Depends(get_db)],
         skip: int = Query(default=0, le=100),
-        limit: int = Query(default=8, le=10)
+        limit: int = Query(default=50, le=100)
 ):
     """
     List all Files of a user
