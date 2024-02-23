@@ -3,6 +3,8 @@ from uuid import UUID
 from pydantic import field_validator
 from sqlmodel import SQLModel
 from datetime import datetime
+from typing import Any
+from pydantic import validator
 
 class IUserFileCreate(UserFileBase):
     pass
@@ -10,11 +12,12 @@ class IUserFileCreate(UserFileBase):
 class IUserFileRead(UserFileBase):
     id: UUID
     created_at: datetime
+  
 
 class IPaginatedUserFileList(SQLModel):
     total: int
-    next_page: int | None
-    prev_page: int | None
+    next_page: str | None
+    prev_page: str | None
 
     data: list[IUserFileRead]
 

@@ -1,4 +1,3 @@
-
 from .question_bank_model import MCQOptions, Question
 from .quiz_attempt_model import QuizAttempt, QuizAnswerSlot
 from .quiz_grade_model import QuizGrade

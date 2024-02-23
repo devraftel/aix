@@ -1,12 +1,14 @@
-from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Query
-from typing import Annotated
 from sqlmodel.ext.asyncio.session import AsyncSession
+from typing import Annotated
+from uuid import UUID
+from datetime import timedelta
 
 from app import crud
 from app.api.deps import get_db
-from app.schemas.quiz_engine_schema import (IQuizCreate, IQuizUpdate, IQuizRead, IPaginatedQuizList, IGenerateQuiz, IQuizRemove)
+from app.core.auth import clerk_auth
 from app.schemas.question_engine_schema import IBatchQuestionsCreate
+from app.schemas.quiz_engine_schema import (IQuizCreate, IQuizUpdate, IQuizRead, IPaginatedQuizList, IGenerateQuiz, IQuizRemove)
 
 # Mock Data
 from app.utils.mock.generated_questions import mock_generated_questions
@@ -15,10 +17,12 @@ router = APIRouter()
 
 
 @router.get("", response_model=IPaginatedQuizList)
-async def get_quiz_list(user_id: str, # TODO: Dependency Injection to validate USER and get user_id
-                        db_session: Annotated[AsyncSession, Depends(get_db)], 
-                        skip: int = Query(default=0, le=100), 
-                        limit: int = Query(default=8, le=10)):
+async def get_quiz_list(
+    user_id: Annotated[str, Depends(clerk_auth.get_session_details)],
+    db_session: Annotated[AsyncSession, Depends(get_db)], 
+    skip: int = Query(default=0, le=100), 
+    limit: int = Query(default=8, le=10)
+    ):
     """
     Gets a paginated list of quizzes for a user
     """
@@ -27,12 +31,13 @@ async def get_quiz_list(user_id: str, # TODO: Dependency Injection to validate U
         
         count_quiz: int = await crud.quiz_engine.get_count_of_quizzes_for_user(user_id=user_id, db_session=db_session)
 
+        to_skip = skip + limit if count_quiz > skip + limit else None
         # Create IPaginatedUserFileList
         paginated_response = IPaginatedQuizList(
             total=count_quiz,
             data=quizzes_list,
-            next_page=skip+limit if skip+limit < int(count_quiz) else None,
-            prev_page=skip-limit if skip-limit >= 0 else None
+            next_page=f"/api/v1/quiz?skip={to_skip}&limit={limit}" if to_skip else "",
+            prev_page=f"/api/v1/quiz?skip={skip - limit}&limit={limit}" if skip > 0 else ""
         )
 
         return paginated_response
@@ -42,8 +47,11 @@ async def get_quiz_list(user_id: str, # TODO: Dependency Injection to validate U
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/get_by_id/{quiz_id}", response_model=IQuizRead)
-async def get_quiz_by_id(user_id: str, quiz_id: UUID, db_session: Annotated[AsyncSession, Depends(get_db)]):
+@router.get("/{quiz_id}", response_model=IQuizRead)
+async def get_quiz_by_id(
+    user_id: Annotated[str, Depends(clerk_auth.get_session_details)],
+    quiz_id: UUID, 
+    db_session: Annotated[AsyncSession, Depends(get_db)]):
     """
     Gets a quiz by its id
     """
@@ -58,6 +66,7 @@ async def get_quiz_by_id(user_id: str, quiz_id: UUID, db_session: Annotated[Asyn
 
 # @router.post("/create", response_model=IQuizRead)
 async def create_quiz(
+        user_id: Annotated[str, Depends(clerk_auth.get_session_details)],
         quiz_in: IQuizCreate,
         db_session: Annotated[AsyncSession, Depends(get_db)]
 ):
@@ -75,9 +84,9 @@ async def create_quiz(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.patch("/{quiz_id}", response_model=IQuizRead)
+# @router.patch("/{quiz_id}", response_model=IQuizRead)
 async def update_quiz(
-        user_id: str,
+        user_id: Annotated[str, Depends(clerk_auth.get_session_details)],
         quiz_id: UUID,
         quiz: IQuizUpdate,
         db_session: Annotated[AsyncSession, Depends(get_db)],
@@ -95,12 +104,15 @@ async def update_quiz(
 
 
 @router.delete("/{quiz_id}", response_model=IQuizRemove)
-async def remove_quiz(user_id: str, quiz_id: UUID, db_session: Annotated[AsyncSession, Depends(get_db)]):
+async def remove_quiz(    
+    quiz_id: UUID, 
+    user_id: Annotated[str, Depends(clerk_auth.get_session_details)], 
+    db_session: Annotated[AsyncSession, Depends(get_db)]):
     """
     Deletes a quiz by its id
     """
     try:
-        quiz_deleted = await crud.quiz_engine.delete_quiz(quiz_id=quiz_id, db_session=db_session)
+        quiz_deleted = await crud.quiz_engine.delete_quiz(user_id=user_id, quiz_id=quiz_id, db_session=db_session)
         return quiz_deleted
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
@@ -110,7 +122,7 @@ async def remove_quiz(user_id: str, quiz_id: UUID, db_session: Annotated[AsyncSe
 
 @router.post("/generate", response_model=IQuizRead)
 async def generate_quiz_rag_ai_pipeline(
-        user_id: str, # TODO: Dependency Injection to validate USER and get user_id from access_token
+        user_id: Annotated[str, Depends(clerk_auth.get_session_details)],
         generate_quiz_data: IGenerateQuiz,
         db_session: Annotated[AsyncSession, Depends(get_db)]
 ):
@@ -150,7 +162,10 @@ async def generate_quiz_rag_ai_pipeline(
         # - count questions_added, total_points, and time_limit (if returned from GPT)
         count_questions_added = len(generated_questions)
         total_points = sum([question["points"] for question in generated_questions])
-        time_limit = sum([question["time_limit"] for question in generated_questions])
+        
+        time_limit_in_minutes = sum([question["time_limit"] for question in generated_questions])
+        # Convert total minutes into a timedelta object
+        time_limit = timedelta(minutes=time_limit_in_minutes)
 
         # 3. Update Quiz Fields and return it
         quiz_update_obj = IQuizUpdate(total_questions_count=count_questions_added, total_points=total_points, time_limit=time_limit)

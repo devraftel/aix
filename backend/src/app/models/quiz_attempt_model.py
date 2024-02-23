@@ -1,7 +1,7 @@
 
 from uuid import UUID
 from sqlmodel import Field, SQLModel, Relationship
-from datetime import timedelta
+from datetime import timedelta, datetime
 from typing import  TYPE_CHECKING, Optional
 
 from app.models.base_uuid_model import BaseUUIDModel
@@ -23,8 +23,8 @@ class QuizAttemptBase(SQLModel):
     user_id: str = Field(index=True)
     quiz_id: UUID = Field(index=True, foreign_key="Quiz.id")
     time_limit: timedelta = Field()
-    time_start: timedelta | None = Field(default=None)
-    time_finish: timedelta | None = Field(default=None)
+    time_start: datetime | None = Field(default=None)
+    time_finish: datetime | None = Field(default=None)
     total_points: int
     attempt_score: float | None = Field(default=None)
     quiz_feedback_id: UUID | None = Field(default=None, foreign_key="QuizFeedback.id")
@@ -44,7 +44,7 @@ class QuizAnswerSlotBase(SQLModel):
     
     question_type: QuestionTypeEnum
 
-    answer_id: UUID | None = Field(default=None)
+    # answer_id: UUID | None = Field(default=None)
     answer_text: str | None = Field(default=None)
     
 
@@ -56,6 +56,14 @@ class QuizAnswerSlot(BaseUUIDModel, QuizAnswerSlotBase, table=True):
     quiz_attempt: "QuizAttempt" = Relationship(back_populates="quiz_answers")
     question: "Question" = Relationship(back_populates="quiz_answers")
     quiz_question_feedback: Optional["QuizQuestionFeedback"] = Relationship(back_populates="quiz_answer_slots")
+    selected_options: list["QuizAnswerOption"] = Relationship(back_populates="quiz_answer_slot", sa_relationship_kwargs={"lazy": "selectin"})
 
 
-    
+class QuizAnswerOptionBase(SQLModel):
+    quiz_answer_slot_id: UUID = Field(foreign_key="QuizAnswerSlot.id")
+    option_id: UUID  # This represents the specific option selected
+
+class QuizAnswerOption(BaseUUIDModel, QuizAnswerOptionBase, table=True):
+    # Relationship back to the QuizAnswerSlot
+    quiz_answer_slot: "QuizAnswerSlot" = Relationship(back_populates="selected_options", sa_relationship_kwargs={"lazy": "joined"})
+
