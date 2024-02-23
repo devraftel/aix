@@ -1,16 +1,15 @@
 from sqlmodel import select, func, and_
 from sqlmodel.ext.asyncio.session import AsyncSession
-from uuid import UUID
-from datetime import datetime, timedelta
 from sqlalchemy.orm import selectinload
-from typing import Optional
+from sqlalchemy.engine.result import ScalarResult
+from datetime import datetime, timedelta
+from uuid import UUID
 
 from app import crud
 from app.models.quiz_attempt_model import QuizAttempt, QuizAnswerSlot, QuizAnswerOption
-
 from app.schemas.quiz_attempt_schema import IQuizAttemptCreate, IQuizAnswerSlotCreate, IQuizAnswerSlotRead
-from sqlalchemy.engine.result import ScalarResult
 
+from app.aisdk.grade_question import grade_open_text_question
 
 class CRUDQuizAttemptEngine:
     # 1. Create Quiz Attempt
@@ -126,7 +125,7 @@ class CRUDQuizAnswerSlotEngine:
             raise e
 
     # 2. Grade Quiz Answer Slot
-    async def grade_quiz_answer_slot(self, db_session: AsyncSession, quiz_answer_slot: IQuizAnswerSlotRead):
+    async def grade_quiz_answer_slot(self, db_session: AsyncSession, quiz_answer_slot: QuizAnswerSlot):
         """
         Grade a Quiz Answer Slot
         """
@@ -145,6 +144,7 @@ class CRUDQuizAnswerSlotEngine:
                 else:
                     quiz_answer_slot.points_awarded = 0
 
+                db_session.add(quiz_answer_slot)
                 await db_session.commit()
 
             # 2.2 for multi_select_mcq match answer_id with question.mcq_options for total correct and matching correct and update points_awarded
@@ -157,17 +157,22 @@ class CRUDQuizAnswerSlotEngine:
                     quiz_answer_slot.points_awarded = question.points
                 else:
                     quiz_answer_slot.points_awarded = 0
-
+                
+                db_session.add(quiz_answer_slot)
                 await db_session.commit()
             
             # 2.3 for single_line_text match answer_text with question.answer_text and update points_awarded
             if quiz_answer_slot.question_type == "open_text_question":
-                # TODO: Replace this with AI pipeline to evaluate the answer and grade it
-                if quiz_answer_slot.answer_text == question.correct_answer:
-                    quiz_answer_slot.points_awarded = question.points
-                else:
-                    quiz_answer_slot.points_awarded = 0
+                # AI pipeline to evaluate the answer and grade it
+                response = grade_open_text_question(question.question_text, question.correct_answer, quiz_answer_slot.answer_text, question.points)
+                print("\n-----response----\n", response, type(response))
+                print("\n-----response['points_awarded']----\n", response['points_awarded'])
 
+                quiz_answer_slot.points_awarded = response['points_awarded']
+
+                print("\n-----quiz_answer_slot.points_awarded----\n", quiz_answer_slot)
+                
+                db_session.add(quiz_answer_slot)
                 await db_session.commit()
 
             # Refresh the Quiz Answer Slot

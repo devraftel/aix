@@ -34,6 +34,14 @@ mock_generated_questions: list = [
         "points": 1,
         "correct_answer": "Generative AI is a type of artificial intelligence that is capable of creating new content or data that is similar to the data it was trained on. This can include creating images, text, and even music or video."
     },
+    {
+        "time_limit": 1, # In minutes - only used to calculate total Quiz Time
+        "question_text": "What is Prompt Engineering for Generative AI?",
+        "difficulty": "medium",
+        "question_type": "open_text_question",
+        "points": 1,
+        "correct_answer": "Prompt engineering for OpenAI involves crafting queries that guide AI models, like GPT, to produce specific, desired outcomes. It's a blend of art and science, requiring a deep understanding of the AI's capabilities and how to frame questions or statements to elicit precise responses. "
+    },
         {
         "time_limit": 2, # In minutes - only used to calculate total Quiz Time
         "question_text": "Select All Incorrect About Generative AI?",

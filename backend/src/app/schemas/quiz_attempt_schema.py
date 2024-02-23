@@ -62,6 +62,6 @@ class IQuizAnswerSlotRead(QuizAnswerSlotBase):
 class IQuizAnswerSlotUpdate(SQLModel):    
     answer_id: UUID | None = None
     answer_text: str | None = None
-    points_awarded: int | None = None
+    points_awarded: float | None = None
     quiz_question_feedback_id: UUID | None = None
 
