@@ -4,6 +4,7 @@ import { getBaseURL } from '@/lib/utils';
 import dayjs from 'dayjs';
 
 import { auth } from '@clerk/nextjs';
+import { revalidateTag } from 'next/cache';
 
 export interface QuizGenerate {
 	title: string;
@@ -65,6 +66,8 @@ export async function createQuiz(data: QuizGenerate): Promise<{
 
 	console.log('POST /quiz/generate success', json);
 
+	revalidateTag('quizList');
+
 	return { data: json };
 }
 
@@ -88,6 +91,9 @@ export async function getQuizList(): Promise<{
 		method: 'GET',
 		headers: {
 			Authorization: `Bearer ${sessionId}`,
+		},
+		next: {
+			tags: ['quizList'],
 		},
 	});
 
@@ -173,3 +179,66 @@ const convertTime = (time: string) => {
 	const date = dayjs.unix(totalSeconds);
 	return `${date.format('HH:mm:ss')}`;
 };
+
+interface QuizAttempt {
+	id: string;
+	user_id: string;
+	quiz_id: string;
+	quiz_title: string;
+	time_limit: string;
+	time_start: string;
+	total_points: number;
+	questions: {
+		id: string;
+		question_text: string;
+		question_type:
+			| 'single_select_mcq'
+			| 'multi_select_mcq'
+			| 'open_text_question';
+		points: number;
+		mcq_options: {
+			id: string;
+			option_text: string;
+		}[];
+	}[];
+}
+
+export async function attemptQuiz(quizId: string): Promise<{
+	error?: string;
+	data?: QuizAttempt;
+}> {
+	if (!quizId) {
+		return { error: 'Quiz ID is required to attempt a quiz.' };
+	}
+
+	const { userId, sessionId } = auth();
+	if (!userId) {
+		return { error: 'User is not logged in' };
+	}
+
+	const baseUrl = getBaseURL();
+
+	const response = await fetch(`${baseUrl}/quiz-attempt/create/${quizId}`, {
+		method: 'POST',
+		headers: {
+			Authorization: `Bearer ${sessionId}`,
+		},
+	});
+
+	if (!response.ok) {
+		console.log(
+			'POST /quiz-attempt/:id failed',
+			response.status,
+			response.statusText
+		);
+		return {
+			error: 'Unable to attempt quiz',
+		};
+	}
+
+	const json = await response.json();
+
+	console.log('POST /quiz-attempt/:id success', json);
+
+	return { data: json };
+}

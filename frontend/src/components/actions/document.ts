@@ -64,7 +64,7 @@ export async function uploadDocument(file: FormData): Promise<Response> {
 
 	if (!response.ok) {
 		console.log(
-			'POST /user_file/:userId failed',
+			'POST /user-file/:userId failed',
 			response.status,
 			response.statusText
 		);

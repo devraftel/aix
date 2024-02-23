@@ -1,6 +1,5 @@
 'use client';
 import { uploadDocument } from '@/components/actions/document';
-import { useFileUploadStore } from '@/components/fileupload-store';
 import {
 	Drawer,
 	DrawerContent,
@@ -15,7 +14,10 @@ import {
 	FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { QUERY_KEY } from '@/lib/constants';
+import { useFileUploadStore } from '@/store/fileupload-store';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useQueryClient } from '@tanstack/react-query';
 import { Upload } from 'lucide-react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -42,6 +44,7 @@ const formSchema = z.object({
 export const FileUpload = () => {
 	const [uploadProgress, setUploadProgress] = useState(0);
 	const [isUploading, setIsUploading] = useState(false);
+	const queryClient = useQueryClient();
 
 	const { isDrawerOpen, setIsDrawerOpen } = useFileUploadStore();
 
@@ -121,6 +124,9 @@ export const FileUpload = () => {
 
 														if (index === files.length - 1) {
 															setIsUploading(false);
+															queryClient.invalidateQueries({
+																queryKey: [QUERY_KEY.DOCUMENTS],
+															});
 															setIsDrawerOpen(!isDrawerOpen);
 														}
 													} catch (error) {
