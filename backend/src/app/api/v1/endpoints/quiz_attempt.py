@@ -8,7 +8,7 @@ from app import crud
 from app.api.deps import get_db
 from app.core.auth import clerk_auth
 from app.schemas.quiz_attempt_schema import (IQuizAttemptCreate, IQuizAttemptUpdate, IQuizAttemptRead, IQuizAttemptCreateResponse,
-                                             IQuizAnswerSlotCreate, IQuizAnswerSlotUpdate, IQuizAnswerSlotRead)
+                                             IQuizAnswerSlotCreate, IQuizAnswerSlotUpdate, IQuizAnswerSlotRead, IQuizAttemptGradedRead, transform_quiz_attempt)
 
 router = APIRouter()
 @router.post("/create/{quiz_id}", response_model=IQuizAttemptCreateResponse)
@@ -41,7 +41,7 @@ async def create_quiz_attempt(
         await db_session.commit()
 
         # prep the response IQuizAttemptCreateResponse
-        quiz_attempt_response = IQuizAttemptCreateResponse(id=quiz_attempt_response.id, user_id=quiz_attempt_response.user_id, quiz_id=quiz_attempt_response.quiz_id, time_limit=quiz_attempt_response.time_limit, time_start=quiz_attempt_response.time_start, total_points=quiz_attempt_response.total_points, questions=quiz_questions)
+        quiz_attempt_response = IQuizAttemptCreateResponse(id=quiz_attempt_response.id, user_id=quiz_attempt_response.user_id, quiz_title=quiz.title, quiz_id=quiz_attempt_response.quiz_id, time_limit=quiz_attempt_response.time_limit, time_start=quiz_attempt_response.time_start, total_points=quiz_attempt_response.total_points, questions=quiz_questions)
         return quiz_attempt_response
 
     except ValueError as e:
@@ -125,3 +125,43 @@ async def save_quiz_answer_slot(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
+# API to view graded Quiz + feedback of each question, selected and correct answers
+@router.get("/{quiz_attempt_id}/graded", response_model=IQuizAttemptGradedRead)
+async def get_graded_quiz_attempt_by_id(        
+    # user_id: Annotated[str, Depends(clerk_auth.get_session_details)],
+    quiz_attempt_id: UUID, 
+    db_session: Annotated[AsyncSession, Depends(get_db)]):
+    """
+    Gets a Graded Quiz Attempt by its id
+    """
+    try:
+        quiz_attempt = await crud.quiz_attempt.graded_quiz_attempt_by_id(db_session, quiz_attempt_id)
+
+        print("\n------------ quiz_attempt ------------\n\n", quiz_attempt)
+        print("\n quiz_attempt.quiz_answers \n", quiz_attempt.quiz_answers)
+
+        print("\n------------ .quiz_answers.quiz_question_feedback ------------\n")
+        for answer in quiz_attempt.quiz_answers:
+            print(answer.quiz_question_feedback)
+
+        print("\n------------ .quiz_answers.selected_options ------------\n")
+        for answer in quiz_attempt.quiz_answers:
+            for selected_option in answer.selected_options:
+                print(selected_option)
+
+        # Correctly iterating over quiz_answers to access each QuizAnswerSlot's related question
+        print("\n------------ .quiz_answers.question ------------\n")
+        for answer_slot in quiz_attempt.quiz_answers:
+            print(answer_slot.question)  
+
+        print("\n------------ .quiz_answers.question.mcq_options ------------\n")
+        for answer_slot in quiz_attempt.quiz_answers:
+            if hasattr(answer_slot, 'question') and answer_slot.question:  # Check if 'question' is loaded and not None
+                print(answer_slot.question.mcq_options)  #'mcq_options' is an attribute or related object of 'question'
+
+        quiz_attempt_data = transform_quiz_attempt(quiz_attempt)
+        return quiz_attempt_data
+
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
