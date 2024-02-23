@@ -22,6 +22,7 @@
     "@radix-ui/react-select": "^2.0.0",
     "@radix-ui/react-slider": "^1.1.2",
     "@radix-ui/react-slot": "^1.0.2",
+    "@tanstack/react-query": "^5.22.2",
     "@tanstack/react-table": "^8.12.0",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
@@ -40,6 +41,7 @@
     "zustand": "^4.5.1"
   },
   "devDependencies": {
+    "@tanstack/eslint-plugin-query": "^5.20.1",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",

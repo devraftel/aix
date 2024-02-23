@@ -2,18 +2,38 @@
 import { getBaseURL } from '@/lib/utils';
 import { auth } from '@clerk/nextjs';
 
-export async function createQuiz(data: any) {
+export const getDocuments = async () => {
+	const { userId, sessionId } = auth();
+
+	if (!userId) {
+		return { error: 'User is not logged in' };
+	}
+
 	const baseUrl = getBaseURL();
-	const response = await fetch(`${baseUrl}/api/quiz`, {
-		method: 'POST',
+
+	const url = `${baseUrl}/user-file`;
+
+	console.log('URL', url);
+	console.log('sessionId', sessionId);
+
+	const response = await fetch(`${url}`, {
 		headers: {
 			'Content-Type': 'application/json',
+			Authorization: `Bearer ${sessionId}`,
 		},
-		body: JSON.stringify(data),
+		cache: 'no-store',
 	});
+
+	if (!response.ok) {
+		console.log('GET /user_files failed', response.status, response.statusText);
+		return { error: 'Unable to fetch documents' };
+	}
+
 	const json = await response.json();
-	return json;
-}
+	console.log('GET /user_files success', json);
+
+	return { data: json };
+};
 
 type Response = {
 	error?: string;
@@ -33,11 +53,9 @@ export async function uploadDocument(file: FormData): Promise<Response> {
 	}
 
 	const baseUrl = getBaseURL();
-	const response = await fetch(`${baseUrl}/user_file`, {
+	const response = await fetch(`${baseUrl}/user-file`, {
 		method: 'POST',
 		headers: {
-			// 'Content-Type': 'application/json',
-
 			Authorization: `Bearer ${sessionId}`,
 		},
 

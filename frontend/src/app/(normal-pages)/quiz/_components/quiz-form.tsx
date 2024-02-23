@@ -2,8 +2,9 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-import { z } from 'zod';
 
+import { fetchDocuments } from '@/components/actions/fetch-document';
+import { QuizGenerate, createQuiz } from '@/components/actions/quiz';
 import { useFileUploadStore } from '@/components/fileupload-store';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -17,86 +18,25 @@ import {
 	FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { MultiSelect } from '@/components/ui/multiselect';
+import { MultiSelect, OptionType } from '@/components/ui/multiselect';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
+import { QUERY_KEY } from '@/lib/constants';
+import { useInfiniteQuery } from '@tanstack/react-query';
+import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-
-enum DifficultyLevel {
-	Easy = 'easy',
-	Medium = 'medium',
-	Hard = 'hard',
-}
-
-const difficultyLevels = Object.values(DifficultyLevel).map((value) => ({
-	value,
-	label: value.charAt(0).toUpperCase() + value.slice(1),
-}));
-
-const items = [
-	{
-		id: 'single-select-mcqs',
-		label: 'Single Select MCQs',
-	},
-	{
-		id: 'multi-select-mcqs',
-		label: 'Multi-Select MCQs',
-	},
-	{
-		id: 'free-form-questions',
-		label: 'Free Form Questions',
-	},
-] as const;
-
-const FormSchema = z.object({
-	quizTitle: z
-		.string({
-			required_error: 'Please enter a title for the quiz.',
-		})
-		.min(2, {
-			message: 'Quiz Title is too short.',
-		}),
-	documentSelection: z.array(z.string()).nonempty({
-		message: 'Please select at least one document to make a quiz from.',
-	}),
-	quizDuration: z
-		.number({
-			required_error: 'Please enter the time for the quiz.',
-		})
-		.min(1, {
-			message: 'Quiz time must be at least 1 minute.',
-		}),
-	questionCount: z
-		.number({
-			required_error: 'Please enter the number of questions.',
-		})
-		.min(1, {
-			message: 'Number of questions must be at least 1.',
-		}),
-	questionTypeSelection: z
-		.array(z.string())
-		.refine((value) => value.some((item) => item), {
-			message: 'Please select at least one question type.',
-		}),
-	difficultyLevelSelection: z.nativeEnum(DifficultyLevel, {
-		required_error: 'Please select the difficulty level.',
-	}),
-	userInstructions: z
-		.string({
-			required_error: 'Please enter user instructions.',
-		})
-		.min(10, {
-			message: 'User instructions are too short.',
-		})
-		.max(500, {
-			message: 'User instructions are too long.',
-		}),
-});
+import {
+	QuizGenerateRequest,
+	QuizGenerateValidator,
+	difficultyLevels,
+	questionTypes,
+} from './utils';
 
 export function QuizeForm() {
+	const router = useRouter();
 	const { isDrawerOpen, setIsDrawerOpen } = useFileUploadStore();
-	const form = useForm<z.infer<typeof FormSchema>>({
-		resolver: zodResolver(FormSchema),
+	const form = useForm<QuizGenerateRequest>({
+		resolver: zodResolver(QuizGenerateValidator),
 		defaultValues: {
 			quizTitle: '',
 			documentSelection: [],
@@ -108,10 +48,58 @@ export function QuizeForm() {
 		},
 	});
 
-	function onSubmit(data: z.infer<typeof FormSchema>) {
-		toast('Email selected: ', {
-			description: data.quizTitle,
-		});
+	const { data, isLoading, error } = useInfiniteQuery({
+		queryKey: [QUERY_KEY.DOCUMENTS],
+		queryFn: fetchDocuments,
+		initialPageParam: 1,
+		getNextPageParam: (_, pages) => pages.length + 1,
+	});
+
+	if (isLoading || error) {
+		return <div>Loading...</div>;
+	}
+
+	const document = data?.pages.flatMap((page) => page.data)[0];
+
+	const documents: OptionType[] = document.data.map(
+		(item: { id: string; file_name: string }) => ({
+			value: item.id,
+			label: item.file_name,
+		})
+	);
+
+	async function onSubmit(data: QuizGenerateRequest) {
+		try {
+			const payload: QuizGenerate = {
+				title: data.quizTitle,
+				time_limit: `PT${data.quizDuration}M`,
+				total_questions_to_generate: Number(data.questionCount),
+				questions_type: data.questionTypeSelection,
+				difficulty: data.difficultyLevelSelection,
+				user_prompt: data.userInstructions,
+				file_ids: data.documentSelection,
+			};
+
+			const res = await createQuiz(payload);
+
+			if (res.error) {
+				toast('Failed to generate quiz', {
+					description: res.error,
+				});
+				return;
+			}
+
+			toast('Quiz Generated Successfully', {
+				description: data.quizTitle,
+			});
+
+			router.push(`/quiz`);
+		} catch (error) {
+			console.log('Error', error);
+			toast('Failed to generate quiz', {
+				description: 'An error occurred while generating the quiz.',
+			});
+		}
 	}
 
 	return (
@@ -149,36 +137,7 @@ export function QuizeForm() {
 							<FormLabel>Documents</FormLabel>
 							<MultiSelect
 								selected={field.value}
-								options={[
-									{
-										value: 'next.js',
-										label: 'Next.js',
-									},
-									{
-										value: 'sveltekit',
-										label: 'SvelteKit',
-									},
-									{
-										value: 'nuxt.js',
-										label: 'Nuxt.js',
-									},
-									{
-										value: 'remix',
-										label: 'Remix',
-									},
-									{
-										value: 'astro',
-										label: 'Astro',
-									},
-									{
-										value: 'wordpress',
-										label: 'WordPress',
-									},
-									{
-										value: 'express.js',
-										label: 'Express.js',
-									},
-								]}
+								options={documents}
 								{...field}
 								className='w-[290px] sm:w-[384px]'
 							/>
@@ -227,7 +186,7 @@ export function QuizeForm() {
 									Select the type of questions you want to include in the quiz.
 								</FormDescription>
 							</div>
-							{items.map((item) => (
+							{questionTypes.map((item) => (
 								<FormField
 									key={item.id}
 									control={form.control}
@@ -342,6 +301,8 @@ export function QuizeForm() {
 				<Button
 					className='w-full'
 					type='submit'
+					disabled={form.formState.isSubmitting || !form.formState.isValid}
+					isLoading={form.formState.isSubmitting}
 				>
 					Generate Quiz
 				</Button>

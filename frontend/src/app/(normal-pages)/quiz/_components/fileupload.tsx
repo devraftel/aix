@@ -1,5 +1,5 @@
 'use client';
-import { uploadDocument } from '@/app/actions';
+import { uploadDocument } from '@/components/actions/document';
 import { useFileUploadStore } from '@/components/fileupload-store';
 import {
 	Drawer,
