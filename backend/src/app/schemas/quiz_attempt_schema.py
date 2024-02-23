@@ -1,58 +1,67 @@
 from uuid import UUID
 from sqlmodel import SQLModel
-from datetime import timedelta
+from datetime import timedelta, datetime
 
-from app.models.quiz_attempt_model import QuizAttemptBase, QuizAnswerSlotBase
-from app.models.quiz_feedback_model import QuizFeedback
-
-# Change to Question Schema
-from app.models.question_bank_model import Question
+from app.models.quiz_attempt_model import QuizAttemptBase, QuizAnswerSlotBase, QuizAnswerOptionBase
+from app.models.quiz_feedback_model import QuizFeedbackBase
+from app.utils.model_enums import QuestionTypeEnum
 
 class IQuizAttemptCreate(SQLModel):
-
     user_id: str
     quiz_id: UUID
-
-    # We will not take the user's input for the following fields
-
-    # exclude = ['quiz_feedback_id', 'time_started', 'time_finish', 'attempt_score', 'total_points', "time_limit"]
-    # time_started is stamped in Crud and others (total_points, time_limit) are added as we get them when checking quiz_id 
-    # time_finish is either quiz duration timeout or when user submits the quiz
+    time_limit: timedelta
+    time_start: datetime
+    total_points: int
 
 # All these fields are optional
 class IQuizAttemptUpdate(SQLModel):
-    time_start: timedelta | None = None
-    time_finish: timedelta | None = None
+    time_finish: datetime | None = None
     attempt_score: float | None = None
     quiz_feedback_id: UUID | None = None    
-    quiz_feedback: QuizFeedback | None = None
+    quiz_feedback: QuizFeedbackBase | None = None
 
 
 class IQuizAttemptRead(QuizAttemptBase):
     id: UUID
 
+# ---------------------
+# Quiz Attempt Create Response 
+# ---------------------
+    
+class QuizMCQOptions(SQLModel):
+    id: UUID
+    option_text: str
+
+class QuizAttemptQuestions(SQLModel):
+    id: UUID
+    question_text: str
+    question_type: QuestionTypeEnum
+    points: int 
+    mcq_options: list[QuizMCQOptions] = []
 
 class IQuizAttemptCreateResponse(SQLModel):
-    quiz_attempt_id: UUID
-    total_points: int
-    time_limit: timedelta
-    time_started: timedelta
+    id: UUID
     user_id: str
     quiz_id: UUID
-    #TODO: Replace Question with Schema that includes MCQ options for MCQ type questions & exclude correct and extra fie;s using pydantic's parsing & validation
-    questions: list[Question]
+    time_limit: timedelta
+    time_start: datetime
+    total_points: int
+    questions: list[QuizAttemptQuestions]
 
 # ---------------------
 # QuizAnswerSlot
 # ---------------------
-    
 class IQuizAnswerSlotCreate(QuizAnswerSlotBase):
-    pass
+    selected_options_ids: list[UUID] = []
+    selected_options: list[QuizAnswerOptionBase] = []
 
 class IQuizAnswerSlotRead(QuizAnswerSlotBase):
     id: UUID
+    selected_options: list[QuizAnswerOptionBase] = []
+
 class IQuizAnswerSlotUpdate(SQLModel):    
     answer_id: UUID | None = None
     answer_text: str | None = None
     points_awarded: int | None = None
     quiz_question_feedback_id: UUID | None = None
+

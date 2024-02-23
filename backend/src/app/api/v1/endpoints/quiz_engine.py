@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlmodel.ext.asyncio.session import AsyncSession
 from typing import Annotated
 from uuid import UUID
+from datetime import timedelta
 
 from app import crud
 from app.api.deps import get_db
@@ -161,7 +162,10 @@ async def generate_quiz_rag_ai_pipeline(
         # - count questions_added, total_points, and time_limit (if returned from GPT)
         count_questions_added = len(generated_questions)
         total_points = sum([question["points"] for question in generated_questions])
-        time_limit = sum([question["time_limit"] for question in generated_questions])
+        
+        time_limit_in_minutes = sum([question["time_limit"] for question in generated_questions])
+        # Convert total minutes into a timedelta object
+        time_limit = timedelta(minutes=time_limit_in_minutes)
 
         # 3. Update Quiz Fields and return it
         quiz_update_obj = IQuizUpdate(total_questions_count=count_questions_added, total_points=total_points, time_limit=time_limit)
