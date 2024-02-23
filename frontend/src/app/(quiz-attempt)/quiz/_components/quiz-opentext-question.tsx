@@ -1,4 +1,5 @@
 'use client';
+import { submitA } from '@/components/actions/attempt';
 import { Button } from '@/components/ui/button';
 import {
 	Form,
@@ -27,15 +28,18 @@ interface Props {
 	total_questions: number;
 	current_question: number;
 	handleSubmit: () => void;
+	attempt_id: string;
+	question_id: string;
 }
 
 export const QuizOpentextQuestion = ({
-	mcq_options,
 	question_text,
 	question_type,
 	current_question,
 	total_questions,
 	handleSubmit,
+	attempt_id,
+	question_id,
 }: Props) => {
 	const FormSchema = z.object({
 		freeformAnswer: z.string({
@@ -46,9 +50,26 @@ export const QuizOpentextQuestion = ({
 		resolver: zodResolver(FormSchema),
 	});
 
-	function onSubmit(data: z.infer<typeof FormSchema>) {
-		handleSubmit();
-		console.log(data);
+	async function onSubmit(data: z.infer<typeof FormSchema>) {
+		try {
+			const res = await submitA({
+				attemptId: attempt_id,
+				questionType: question_type,
+				answerText: data.freeformAnswer,
+				questionId: question_id,
+			});
+
+			if (res.error) {
+				console.error('Error submitting answer:', res.error);
+				return;
+			}
+
+			console.log('Answer submitted:', res.data);
+
+			handleSubmit();
+		} catch (error) {
+			console.error('Error submitting answer:', error);
+		}
 	}
 
 	return (
@@ -89,6 +110,7 @@ export const QuizOpentextQuestion = ({
 							size='default'
 							type='submit'
 							disabled={!form.formState.isValid}
+							isLoading={form.formState.isSubmitting}
 						>
 							Continue
 						</Button>

@@ -1,4 +1,5 @@
 'use client';
+import { submitA } from '@/components/actions/attempt';
 import { Button } from '@/components/ui/button';
 import {
 	Form,
@@ -27,6 +28,8 @@ interface Props {
 	total_questions: number;
 	current_question: number;
 	handleSubmit: () => void;
+	attempt_id: string;
+	question_id: string;
 }
 
 export const QuizSingleSelectQuestion = ({
@@ -36,6 +39,8 @@ export const QuizSingleSelectQuestion = ({
 	current_question,
 	total_questions,
 	handleSubmit,
+	attempt_id,
+	question_id,
 }: Props) => {
 	const FormSchema = z.object({
 		selectedOption: z.enum(
@@ -55,9 +60,28 @@ export const QuizSingleSelectQuestion = ({
 		resolver: zodResolver(FormSchema),
 	});
 
-	function onSubmit(data: z.infer<typeof FormSchema>) {
-		handleSubmit();
-		console.log(data);
+	async function onSubmit(data: z.infer<typeof FormSchema>) {
+		// handleSubmit();
+		// console.log(data);
+		try {
+			const res = await submitA({
+				attemptId: attempt_id,
+				questionType: question_type,
+				selectedOptions: [data.selectedOption],
+				questionId: question_id,
+			});
+
+			if (res.error) {
+				console.error('Error submitting answer:', res.error);
+				return;
+			}
+
+			console.log('Answer submitted:', res.data);
+
+			handleSubmit();
+		} catch (error) {
+			console.error('Error submitting answer:', error);
+		}
 	}
 
 	return (

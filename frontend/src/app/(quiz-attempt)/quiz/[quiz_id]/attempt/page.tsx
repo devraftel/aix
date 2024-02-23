@@ -76,6 +76,8 @@ export default function QuizAttemp({ params }: QuizAttempProps) {
 
 					{currentQuestion?.question_type === 'open_text_question' && (
 						<QuizOpentextQuestion
+							attempt_id={quizAttempt?.id!}
+							question_id={currentQuestion?.id!}
 							question_text={currentQuestion?.question_text!}
 							question_type={currentQuestion?.question_type!}
 							mcq_options={currentQuestion?.mcq_options!}
@@ -87,6 +89,8 @@ export default function QuizAttemp({ params }: QuizAttempProps) {
 
 					{currentQuestion?.question_type === 'single_select_mcq' && (
 						<QuizSingleSelectQuestion
+							attempt_id={quizAttempt?.id!}
+							question_id={currentQuestion?.id!}
 							question_text={currentQuestion?.question_text!}
 							question_type={currentQuestion?.question_type!}
 							mcq_options={currentQuestion?.mcq_options!}
@@ -98,6 +102,8 @@ export default function QuizAttemp({ params }: QuizAttempProps) {
 
 					{currentQuestion?.question_type === 'multi_select_mcq' && (
 						<QuizMultiselectQuestion
+							attempt_id={quizAttempt?.id!}
+							question_id={currentQuestion?.id!}
 							question_text={currentQuestion?.question_text!}
 							question_type={currentQuestion?.question_type!}
 							mcq_options={currentQuestion?.mcq_options!}
