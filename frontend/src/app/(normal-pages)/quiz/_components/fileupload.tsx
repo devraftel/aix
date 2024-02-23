@@ -1,6 +1,6 @@
 'use client';
+import { uploadDocument } from '@/components/actions/document';
 import { useFileUploadStore } from '@/components/fileupload-store';
-import { Button } from '@/components/ui/button';
 import {
 	Drawer,
 	DrawerContent,
@@ -10,7 +10,6 @@ import {
 import {
 	Form,
 	FormControl,
-	FormDescription,
 	FormField,
 	FormItem,
 	FormMessage,
@@ -44,7 +43,7 @@ export const FileUpload = () => {
 	const [uploadProgress, setUploadProgress] = useState(0);
 	const [isUploading, setIsUploading] = useState(false);
 
-	const { openDrawer, closeDrawer, isDrawerOpen } = useFileUploadStore();
+	const { isDrawerOpen, setIsDrawerOpen } = useFileUploadStore();
 
 	const form = useForm<z.infer<typeof formSchema>>({
 		resolver: zodResolver(formSchema),
@@ -53,37 +52,9 @@ export const FileUpload = () => {
 		},
 	});
 
-	function onSubmit(values: z.infer<typeof formSchema>) {
-		setIsUploading(true);
-		setUploadProgress(0);
-
-		values.pdf.forEach((file, index) => {
-			setTimeout(() => {
-				setUploadProgress(
-					(prevProgress) => prevProgress + 100 / values.pdf.length
-				);
-
-				toast(`File Uploaded successfully.`, {
-					description: `Your file ${file.file.name} has been uploaded successfully.`,
-					closeButton: true,
-				});
-
-				if (index === values.pdf.length - 1) {
-					setIsUploading(false);
-					closeDrawer();
-				}
-			}, index * 500);
-		});
-
-		console.log(values);
-	}
-
 	return (
 		<Form {...form}>
-			<form
-				onSubmit={form.handleSubmit(onSubmit)}
-				className='space-y-8 w-full max-w-md'
-			>
+			<form className='space-y-8 w-full max-w-md'>
 				<FormField
 					control={form.control}
 					name='pdf'
@@ -98,12 +69,11 @@ export const FileUpload = () => {
 										<div className='flex flex-col items-center justify-center h-full'>
 											<Upload />
 											<h3 className='mt-3 font-semibold text-gray-900'>
-												Drag and drop or{' '}
-												<span className='text-amber-500'>choose</span> file to
-												upload
+												Select <span className='text-amber-500'>PDF files</span>{' '}
+												for upload
 											</h3>
 											<p className='text-sm text-gray-500 dark:text-gray-400'>
-												Select pdf file
+												You may select multiple files at once. Click to browse.
 											</p>
 										</div>
 										<Input
@@ -117,26 +87,62 @@ export const FileUpload = () => {
 													(file) => ({ file })
 												);
 												field.onChange(files);
+
+												// ---
+
+												setIsUploading(true);
+												setUploadProgress(0);
+
+												files.forEach(async (file, index) => {
+													try {
+														const formData = new FormData();
+														formData.append('file', file.file);
+
+														const res = await uploadDocument(formData);
+
+														if (res.error) {
+															toast(`File upload failed.`, {
+																description: `Your file ${file.file.name} failed to upload.`,
+																closeButton: true,
+															});
+															setIsUploading(false);
+															return;
+														}
+
+														setUploadProgress(
+															(prevProgress) =>
+																prevProgress + 100 / files.length
+														);
+
+														toast(`File Uploaded successfully.`, {
+															description: `Your file ${file.file.name} has been uploaded successfully.`,
+															closeButton: true,
+														});
+
+														if (index === files.length - 1) {
+															setIsUploading(false);
+															setIsDrawerOpen(!isDrawerOpen);
+														}
+													} catch (error) {
+														console.log(error);
+														toast(`File upload failed.`, {
+															description: `Your file ${file.file.name} could not be uploaded.`,
+															closeButton: true,
+														});
+													} finally {
+														setIsUploading(false);
+													}
+												});
 											}}
 										/>
 									</label>
 								</div>
 							</FormControl>
-							<FormDescription>
-								Upload the files you want to create a quiz from.
-							</FormDescription>
+
 							<FormMessage />
 						</FormItem>
 					)}
 				/>
-				<Button
-					className='w-full'
-					type='submit'
-					disabled={isUploading || form.formState.isSubmitting}
-					isLoading={isUploading || form.formState.isSubmitting}
-				>
-					Upload Files
-				</Button>
 			</form>
 			{isUploading && <div>Uploading: {uploadProgress}%</div>}
 		</Form>
@@ -144,10 +150,16 @@ export const FileUpload = () => {
 };
 
 export function DrawerDemo() {
-	const { isDrawerOpen } = useFileUploadStore();
+	const { isDrawerOpen, setIsDrawerOpen } = useFileUploadStore();
 	return (
-		<Drawer open={isDrawerOpen}>
-			<DrawerContent className='flex flex-col items-center'>
+		<Drawer
+			open={isDrawerOpen}
+			onOpenChange={setIsDrawerOpen}
+			onClose={() => {
+				setIsDrawerOpen(false);
+			}}
+		>
+			<DrawerContent className='flex flex-col items-center pb-5 md:pb-10'>
 				<DrawerHeader>
 					<DrawerTitle>Add new files</DrawerTitle>
 				</DrawerHeader>

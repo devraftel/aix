@@ -1,6 +1,6 @@
 from sqlmodel import select, func, and_
-from uuid import UUID
 from sqlmodel.ext.asyncio.session import AsyncSession
+from uuid import UUID
 
 from app import crud
 from app.models.quiz_engine_model import Quiz
@@ -13,22 +13,30 @@ class CRUDQuizEngine:
             result = await db_session.exec((select(Quiz).where(Quiz.user_id == user_id)).offset(offset).limit(limit))
             user_files = result.all()
             if not user_files:
-                raise ValueError("Quiz not found")
+                raise ValueError("Quizzes not found")
             return user_files
         except ValueError as e:
+            await db_session.rollback()
             raise e
         except Exception as e:
+            await db_session.rollback()
             raise e
 
     async def get_quiz_by_id(self, *, user_id: str,  quiz_id: UUID, db_session: AsyncSession):
-        query = select(Quiz).where(
-            and_(Quiz.id == quiz_id, Quiz.user_id == user_id))
-        result = await db_session.exec(query)
-        quiz_retrieved = result.one()
+        try:
+            query = select(Quiz).where(and_(Quiz.id == quiz_id, Quiz.user_id == user_id))
+            result = await db_session.exec(query)
+            quiz_retrieved = result.one_or_none()
 
-        if quiz_retrieved is None:
-            raise ValueError("quiz_retrieved not found")
-        return quiz_retrieved
+            if quiz_retrieved is None:
+                raise ValueError("Quiz not found")
+            return quiz_retrieved
+        except ValueError as e:
+            await db_session.rollback()
+            raise e
+        except Exception as e:
+            await db_session.rollback()
+            raise e
 
     async def get_count_of_quizzes_for_user(
             self,
@@ -46,23 +54,27 @@ class CRUDQuizEngine:
                 raise ValueError("No Quiz found")
             return value
         except ValueError as e:
+            await db_session.rollback()
             raise e
         except Exception as e:
+            await db_session.rollback()
             raise e
 
     async def delete_quiz(
-            self, *, db_session: AsyncSession, quiz_id: UUID
+            self, *, db_session: AsyncSession, quiz_id: UUID, user_id: str
     ):
         try:
-            quiz = await db_session.get(Quiz, quiz_id)
+            quiz = await self.get_quiz_by_id(user_id=user_id, quiz_id=quiz_id, db_session=db_session)
             if quiz is None:
                 raise ValueError("quiz not found")
             await db_session.delete(quiz)
             await db_session.commit()
             return {"id": quiz.id, "quiz_name": quiz.title, "deleted": True}
         except ValueError as e:
+            await db_session.rollback()
             raise e
         except Exception as e:
+            await db_session.rollback()
             raise e
 
     async def update_quiz(
@@ -81,8 +93,10 @@ class CRUDQuizEngine:
             await db_session.refresh(db_obj)
             return db_obj
         except ValueError as e:
+            await db_session.rollback()
             raise e
         except Exception as e:
+            await db_session.rollback()
             raise e
 
     async def create_quiz(
@@ -90,7 +104,7 @@ class CRUDQuizEngine:
     ):
         try:
             if quiz_obj.user_file_ids:
-                    # Data to Link Selected Files to Quiz
+                # Data to Link Selected Files to Quiz
                 quiz_files_data_obj = await crud.user_file.get_file_ids_data(file_ids=quiz_obj.user_file_ids, user_id=quiz_obj.user_id, db_session=db_session)
                 quiz_obj.user_files.extend(quiz_files_data_obj)
 
@@ -100,6 +114,7 @@ class CRUDQuizEngine:
             await db_session.refresh(db_obj)
             return db_obj
         except Exception as e:
+            await db_session.rollback()
             raise e
 
 

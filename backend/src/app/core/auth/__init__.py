@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token", auto_error=False)
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 
 class SessionStatus(str, Enum):
@@ -53,7 +53,7 @@ class Clerk:
 
     def get_session_details(
         self, token: Annotated[str | None, Depends(oauth2_scheme)]
-    ) -> ClerkSession | InactiveSessionError | None:
+    ) -> ClerkSession | InactiveSessionError | None | str:
         if not token:
             return None
 
@@ -68,8 +68,10 @@ class Clerk:
             data = response.json()
             session = ClerkSession(**data)
 
+            print(f"\nSuccessfully retrieved user session with token: {session}\n")
+
             if session.status == "active":
-                return session
+                return session.user_id
 
         except requests.exceptions.HTTPError as http_err:
             print(
@@ -78,9 +80,7 @@ class Clerk:
             raise HTTPException(
                 status_code=response.status_code,
                 # detail=f"HTTP ({response.status_code}) Error occurred during user session retrieval. Error message: {response.json()['errors'][0]['message']}",
-                detail=err.response.json().get("errors", [{"message": str(err)}])[0][
-                    "message"
-                ],
+                detail=f"{http_err}",
             )
         except requests.exceptions.RequestException as err:
             print(f"Request Exception: An error occurred during the request: {err}")
@@ -95,6 +95,8 @@ class Clerk:
                 detail=f"Unexpected Exception: An unexpected error occurred: {err}",
             )
         raise InactiveSessionError()
+
+clerk_auth = Clerk()
 
     # def get_oauth_user(self, token: Annotated[str | None, Depends(oauth2_scheme)]):
     #     if not token:

@@ -1,13 +1,15 @@
 import MaxWidthWrapper from '@/components/max-width-wrapper';
 import MobileNav from '@/components/mobile-nav';
-import { buttonVariants } from '@/components/ui/button';
-import { UserButton, auth } from '@clerk/nextjs';
+import { Button, buttonVariants } from '@/components/ui/button';
+import { auth, UserButton } from '@clerk/nextjs';
 import { ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { Logo } from './logo';
 
+import { SignedOut, SignInButton, SignUpButton } from '@clerk/nextjs';
+
 const Navbar = async () => {
-	const { userId, getToken, sessionId } = auth();
+	const { userId } = auth();
 
 	return (
 		<nav className='sticky h-14 inset-x-0 top-0 z-30 w-full border-b border-gray-200 bg-white/75 backdrop-blur-lg transition-all'>
@@ -20,23 +22,27 @@ const Navbar = async () => {
 					<div className='hidden items-center space-x-4 sm:flex'>
 						{!userId ? (
 							<>
-								<Link
-									href='/sign-in'
-									className={buttonVariants({
-										variant: 'ghost',
-										size: 'sm',
-									})}
-								>
-									Sign in
-								</Link>
-								<Link
-									href='/sign-up'
-									className={buttonVariants({
-										size: 'sm',
-									})}
-								>
-									Get started <ArrowRight className='ml-1.5 h-5 w-5' />
-								</Link>
+								<SignedOut>
+									<SignInButton mode='modal'>
+										<Button
+											size='sm'
+											type='button'
+											variant='ghost'
+										>
+											Sign in
+										</Button>
+									</SignInButton>
+								</SignedOut>
+								<SignedOut>
+									<SignUpButton mode='modal'>
+										<Button
+											size='sm'
+											type='button'
+										>
+											Get started <ArrowRight className='ml-1.5 h-5 w-5' />
+										</Button>
+									</SignUpButton>
+								</SignedOut>
 							</>
 						) : (
 							<>

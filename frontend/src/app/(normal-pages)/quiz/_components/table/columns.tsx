@@ -10,22 +10,30 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { ColumnDef } from '@tanstack/react-table';
 import { MoreHorizontal, Settings } from 'lucide-react';
+import Link from 'next/link';
 
-export type Payment = {
+export type QuizList = {
 	id: string;
 	quizTitle: string;
 	totalQuestions: number;
-	createdAt: string;
+	total_points: number;
+	time_limit: string;
 	status: 'complete' | 'available';
 };
 
-export const columns: ColumnDef<Payment>[] = [
+export const columns: ColumnDef<QuizList>[] = [
 	{
 		accessorKey: 'quizTitle',
 		header: () => <div className='text-left'>Title</div>,
-		cell: ({ row }) => (
-			<div className='capitalize'>{row.getValue('quizTitle')}</div>
-		),
+		cell: ({ row }) => {
+			return (
+				<div className='capitalize hover:underline underline-offset-2'>
+					<Link href={`/quiz/${row.original.id}`}>
+						{row.getValue('quizTitle')}
+					</Link>
+				</div>
+			);
+		},
 	},
 	{
 		accessorKey: 'totalQuestions',
@@ -35,10 +43,10 @@ export const columns: ColumnDef<Payment>[] = [
 		),
 	},
 	{
-		accessorKey: 'createdAt',
-		header: () => <div className='text-left'>Created at</div>,
+		accessorKey: 'total_points',
+		header: () => <div className='text-left'>Points</div>,
 		cell: ({ row }) => (
-			<div className='lowercase'>{row.getValue('createdAt')}</div>
+			<div className='lowercase'>{row.getValue('total_points')}</div>
 		),
 	},
 	{
@@ -46,6 +54,13 @@ export const columns: ColumnDef<Payment>[] = [
 		header: () => <div className='text-left'>Status</div>,
 		cell: ({ row }) => (
 			<div className='capitalize'>{row.getValue('status')}</div>
+		),
+	},
+	{
+		accessorKey: 'time_limit',
+		header: () => <div className='text-left'>Time Limit</div>,
+		cell: ({ row }) => (
+			<div className='capitalize'>{row.getValue('time_limit')}</div>
 		),
 	},
 	{
@@ -58,7 +73,7 @@ export const columns: ColumnDef<Payment>[] = [
 		),
 		enableHiding: false,
 		cell: ({ row }) => {
-			const payment = row.original;
+			const quiz = row.original;
 
 			return (
 				<DropdownMenu>
@@ -73,13 +88,32 @@ export const columns: ColumnDef<Payment>[] = [
 					</DropdownMenuTrigger>
 					<DropdownMenuContent align='end'>
 						<DropdownMenuLabel>Actions</DropdownMenuLabel>
-						<DropdownMenuItem
-							onClick={() => navigator.clipboard.writeText(payment.id)}
-						>
-							Attempt Quiz
+						<DropdownMenuItem>
+							<Link
+								href={`/quiz/${quiz.id}`}
+								className=''
+							>
+								View Quiz
+							</Link>
 						</DropdownMenuItem>
 						<DropdownMenuSeparator />
-						<DropdownMenuItem>View Feedback</DropdownMenuItem>
+						<DropdownMenuItem>
+							<Link
+								href={`/quiz/${quiz.id}/attempt`}
+								className=''
+							>
+								Attempt Quiz
+							</Link>
+						</DropdownMenuItem>
+						<DropdownMenuSeparator />
+						<DropdownMenuItem>
+							<Link
+								href={`/quiz/${quiz.id}/feedback`}
+								className=''
+							>
+								Check Feedback
+							</Link>
+						</DropdownMenuItem>
 					</DropdownMenuContent>
 				</DropdownMenu>
 			);

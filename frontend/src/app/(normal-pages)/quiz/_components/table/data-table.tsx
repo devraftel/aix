@@ -30,47 +30,9 @@ import {
 	TableHeader,
 	TableRow,
 } from '@/components/ui/table';
-import { Payment, columns } from './columns';
+import { QuizList, columns } from './columns';
 
-const data: Payment[] = [
-	{
-		id: 'm5gr84i9',
-		status: 'complete',
-		quizTitle: 'Typescript Quiz',
-		totalQuestions: 10,
-		createdAt: '2021-09-01',
-	},
-	{
-		id: '3u1reuv4',
-		status: 'available',
-		quizTitle: 'Next.js Quiz',
-		totalQuestions: 10,
-		createdAt: '2021-09-01',
-	},
-	{
-		id: 'derv1ws0',
-		status: 'complete',
-		quizTitle: 'Generative AI',
-		totalQuestions: 10,
-		createdAt: '2021-09-01',
-	},
-	{
-		id: '5kma53ae',
-		status: 'available',
-		quizTitle: 'Python Quiz',
-		totalQuestions: 10,
-		createdAt: '2021-09-01',
-	},
-	{
-		id: 'bhqecj4p',
-		status: 'complete',
-		quizTitle: 'React Quiz',
-		totalQuestions: 10,
-		createdAt: '2021-09-01',
-	},
-];
-
-export function QuizListTable() {
+export function QuizListTable({ data }: { data: QuizList[] }) {
 	const [sorting, setSorting] = React.useState<SortingState>([]);
 	const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
 		[]

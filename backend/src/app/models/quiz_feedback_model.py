@@ -14,11 +14,11 @@ if TYPE_CHECKING:
 # - QuizQuestionFeedback Table
 
 class QuizQuestionFeedbackBase(SQLModel):
-    feedback_score: int | None = Field(default=None)
+    # feedback_score: int | None = Field(default=None)
     feedback_text: str | None = Field(default=None)
     llm_learning_json: str | None = Field(default=None)
 
-    user_id: str = Field(index=True)
+    # user_id: str = Field(index=True)
     question_id: UUID = Field(index=True, foreign_key="Question.id")
 
 
@@ -31,12 +31,12 @@ class QuizQuestionFeedback(BaseUUIDModel, QuizQuestionFeedbackBase, table=True):
 # QuizFeedBack Table
 
 class QuizFeedbackBase(SQLModel):
-    feedback_score: int | None = Field(default=None)
+    # feedback_score: int | None = Field(default=None)
     feedback_text: str | None = Field(default=None)
     llm_learning_json: str | None = Field(default=None)
 
     quiz_id: UUID = Field(index=True, foreign_key="Quiz.id")
-    user_id: str = Field(index=True)
+    # user_id: str = Field(index=True)
 
 class QuizFeedback(BaseUUIDModel, QuizFeedbackBase, table=True):
     quiz_attempts: list["QuizAttempt"] = Relationship(back_populates="quiz_feedback")
