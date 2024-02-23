@@ -1,12 +1,18 @@
 # Running Locally For Development & Deployment Guide
 
+## Backend 
+
+Perform all cli commands in root dir in terminal i.e aix:
+
 -  Rename `.env.example` to `.env`, add Environment Variables & Ensure you have docker installed and running.
 
 ### 1. To Run Fast Server:
 
 Ensure your have poetry installed `pip install poetry` and then in terminal run:
 
-```docker compose -f docker-compose-dev.yml up```
+```
+docker compose -f docker-compose-dev.yml up
+```
 
 Now Visit
 
@@ -38,3 +44,20 @@ docker compose -f docker-compose-dev.yml exec fastapi_server alembic upgrade hea
 - Push to DockerHub & Deploy on Google Run
 
 `docker push mjunaidca/aix_fastapi_server:latest`
+
+## Frontend
+
+Go to frontend dir. i.e: cd frontend
+
+### Running Locally
+
+-  Rename `.env.example` to `.env`, add Environment Variables
+
+- Run pnpm install
+
+- Run pnpm dev
+
+### Deploy to Vercel
+
+The easiest way is Deploy to vercel or else you dockarize the frontend and deploy to cloud of your choice.
+

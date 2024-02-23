@@ -18,7 +18,7 @@ class QuizBase(SQLModel):
     has_user_attempted: bool = Field(default=False)
     time_limit: timedelta | None = Field(default=timedelta(minutes=0)) # Proposal: Make it time_limit_minutes
     total_points: int | None = Field(default=0)
-    total_questions: int | None = Field(default=0)
+    total_questions_count: int | None = Field(default=0)
 
 
 class Quiz(BaseUUIDModel, QuizBase, table=True):
