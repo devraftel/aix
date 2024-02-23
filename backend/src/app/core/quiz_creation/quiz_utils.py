@@ -89,23 +89,22 @@ async def generate_questions_with_ai(questions_content: List[str]) -> List[dict]
     generated_questions = []
     for content_piece in questions_content:
         prompt = f"""
-        Using the following information, craft a detailed multiple-choice question suitable for educational purposes. Ensure the question tests key concepts or facts within the content, has one clearly correct answer, and three plausible distractors. Focus on clarity, relevance to the content, and educational value. Consider common misconceptions that might make distractors more challenging.
+        Craft a detailed multiple-choice question based on the following information, suitable for educational purposes. The question should test key concepts or facts within the content and include one clearly correct answer and three plausible distractors. Focus on clarity, relevance to the content, and educational value. Consider common misconceptions that might make distractors more challenging. Present the question and options together, each on a separate line. Mark the correct answer by starting it with an asterisk (*) directly before the text, with no spaces between the asterisk and the text.
 
         Content Summary:
         {content_piece}
 
-        Generate a question as follows:
+        Begin your response as follows:
         """
 
-        response = llm(prompt)  # Make sure this call matches your method of invoking the AI model
+        response = llm(prompt)
 
-        # Parse and format the response into your IDictQuestion structure
         try:
-            # Assuming parse_question_from_response returns a structured dict with 'question_text', 'options', etc.
-            question_data = parse_question_from_response(response)
+            question_data = parse_answers(response)
             generated_question = {
                 "text": question_data["question_text"],
                 "options": question_data["options"],
+                "correct_answer": question_data["correct_answer"],
                 "points": 1,
                 "difficulty": "medium",
                 "time_limit": 30,
@@ -117,11 +116,21 @@ async def generate_questions_with_ai(questions_content: List[str]) -> List[dict]
     return generated_questions
 
 
-def parse_question_from_response(response: str) -> Tuple[str, List[str]]:
-    lines = response.splitlines()
-    question_text = lines[0].split(":")[1].strip()
-    options = [line.split(":")[1].strip() for line in lines[1:5]]
-    correct_answer_letter = lines[5].split(":")[1].strip()
-    correct_answer_index = ord(correct_answer_letter) - ord('A')  # Convert 'A', 'B',... to 0, 1, ...
-    options.insert(correct_answer_index, f"* {options.pop(correct_answer_index)}") # Insert '*' to mark correct answer
-    return question_text, options
+def parse_answers(response: str) -> dict:
+    lines = response.strip().split('\n')
+
+    options = []
+
+    correct_answer_index = -1
+
+    for i, line in enumerate(lines):
+        if line.startswith("*"):
+            correct_answer_index = i
+            options.append(line[1:].strip())
+        else:
+            options.append(line.strip())
+
+    return {
+        "options": options,
+        "correct_answer_index": correct_answer_index,
+    }
