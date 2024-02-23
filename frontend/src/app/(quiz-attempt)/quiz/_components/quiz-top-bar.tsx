@@ -1,18 +1,18 @@
 import { Button } from '@/components/ui/button';
-import { currentUser } from '@clerk/nextjs';
+import { useUser } from '@clerk/nextjs';
 import { X } from 'lucide-react';
 import Link from 'next/link';
 
-export const QuizTopBar = async ({ title }: { title: string }) => {
-	const user = await currentUser();
+export const QuizTopBar = ({ title }: { title: string }) => {
+	const user = useUser();
 
 	return (
 		<div className='flex items-center justify-center bg-gray-200 w-full px-4 font-roboto '>
 			{/* username / email */}
 			<div className='flex-1 text-sm font-medium hidden md:block'>
-				{user?.username ||
+				{user?.user?.username ||
 					// user?.firstName ||
-					user?.emailAddresses[0].emailAddress}
+					user?.user?.emailAddresses[0].emailAddress}
 			</div>
 
 			{/* Quiz Title */}
