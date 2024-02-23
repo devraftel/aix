@@ -12,15 +12,16 @@ import { ColumnDef } from '@tanstack/react-table';
 import { MoreHorizontal, Settings } from 'lucide-react';
 import Link from 'next/link';
 
-export type Payment = {
+export type QuizList = {
 	id: string;
 	quizTitle: string;
 	totalQuestions: number;
-	createdAt: string;
+	total_points: number;
+	time_limit: string;
 	status: 'complete' | 'available';
 };
 
-export const columns: ColumnDef<Payment>[] = [
+export const columns: ColumnDef<QuizList>[] = [
 	{
 		accessorKey: 'quizTitle',
 		header: () => <div className='text-left'>Title</div>,
@@ -36,10 +37,10 @@ export const columns: ColumnDef<Payment>[] = [
 		),
 	},
 	{
-		accessorKey: 'createdAt',
-		header: () => <div className='text-left'>Created at</div>,
+		accessorKey: 'total_points',
+		header: () => <div className='text-left'>Points</div>,
 		cell: ({ row }) => (
-			<div className='lowercase'>{row.getValue('createdAt')}</div>
+			<div className='lowercase'>{row.getValue('total_points')}</div>
 		),
 	},
 	{
@@ -47,6 +48,13 @@ export const columns: ColumnDef<Payment>[] = [
 		header: () => <div className='text-left'>Status</div>,
 		cell: ({ row }) => (
 			<div className='capitalize'>{row.getValue('status')}</div>
+		),
+	},
+	{
+		accessorKey: 'time_limit',
+		header: () => <div className='text-left'>Time Limit</div>,
+		cell: ({ row }) => (
+			<div className='capitalize'>{row.getValue('time_limit')}</div>
 		),
 	},
 	{

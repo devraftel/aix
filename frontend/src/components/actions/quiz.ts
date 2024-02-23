@@ -66,3 +66,40 @@ export async function createQuiz(data: QuizGenerate): Promise<{
 
 	return { data: json };
 }
+
+export async function getQuizList(): Promise<{
+	error?: string;
+	data?: {
+		total: number;
+		next_page: string;
+		prev_page: string;
+		data: QuizGenerateReponse[];
+	};
+}> {
+	const { userId, sessionId } = auth();
+	if (!userId) {
+		return { error: 'User is not logged in' };
+	}
+
+	const baseUrl = getBaseURL();
+
+	const response = await fetch(`${baseUrl}/quiz`, {
+		method: 'GET',
+		headers: {
+			Authorization: `Bearer ${sessionId}`,
+		},
+	});
+
+	if (!response.ok) {
+		console.log('GET /quiz failed', response.status, response.statusText);
+		return {
+			error: 'Unable to get quiz list',
+		};
+	}
+
+	const json = await response.json();
+
+	console.log('GET /quiz success', json);
+
+	return { data: json };
+}
