@@ -1,6 +1,6 @@
 from sqlmodel import select, func, and_
 from sqlmodel.ext.asyncio.session import AsyncSession
-from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import selectinload, joinedload
 from sqlalchemy.engine.result import ScalarResult
 from datetime import datetime, timedelta
 from uuid import UUID
@@ -104,6 +104,30 @@ class CRUDQuizAttemptEngine:
         await db_session.refresh(quiz_active_attempt)
 
         return quiz_active_attempt
+
+    async def graded_quiz_attempt_by_id(self, db_session: AsyncSession, quiz_attempt_id: UUID):
+        """
+        Get the graded quiz attempt by ID
+        """
+        # from quiz_attempt selectinload relationships
+        # - quiz:           - quiz_answers: 
+        #       from quiz_answers joinedload get the
+                    # question      - quiz_question_feedback        - selected_options
+        
+        try:
+            graded_quiz_attempt: ScalarResult[QuizAttempt] = await db_session.exec(
+                select(QuizAttempt).options(
+                    selectinload(QuizAttempt.quiz_answers).options( # type: ignore
+                        joinedload(QuizAnswerSlot.question),  # type: ignore
+                        joinedload(QuizAnswerSlot.quiz_question_feedback), # type: ignore
+                        joinedload(QuizAnswerSlot.selected_options)   # type: ignore
+                        )
+                ).where(QuizAttempt.id == quiz_attempt_id))
+            return graded_quiz_attempt.one_or_none()
+        except Exception as e:
+            print("\n-----Error in graded_quiz_attempt_by_id----\n", e)
+            await db_session.rollback()
+            raise e
 
 class CRUDQuizAnswerSlotEngine:
     # 1. Create Quiz Answer Slot
