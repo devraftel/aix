@@ -6,7 +6,7 @@ authors = ["mjs <mr.junaid.ca@gmail.com>"]
 
 [tool.black]
 line-length = 88
-target-version = [ "py310", "py311", "py312" ]
+target-version = [ "py311" ]
 exclude = "((.eggs | .git | .pytest_cache | build | dist))"
 
 [tool.ruff]
@@ -39,23 +39,22 @@ exclude = ["alembic", "__pycache__"]
 
 
 [tool.poetry.dependencies]
-python = ">3.11,<3.13"
+python = ">=3.11, <3.12"
 alembic = "^1.13.0"
 asyncpg = "^0.29.0"
-fastapi = {extras = ["all"], version = "^0.104.1"}
+fastapi = {extras = ["all"], version = "^0.110.0"}
 cryptography = "^41.0.7"
 bcrypt = "^4.1.1"
 SQLAlchemy-Utils = "^0.41.1"
-SQLAlchemy = "^2.0.23"
+SQLAlchemy = "^2.0.27"
 watchfiles = "^0.21.0"
-asyncer = "^0.0.2"
+asyncer = "^0.0.5"
 httpx = "^0.25.2"
-pandas = "^2.1.4"
 openpyxl = "^3.1.2"
 
-fastapi-async-sqlalchemy = "^0.6.0"
+fastapi-async-sqlalchemy = "^0.6.1"
 
-psycopg2-binary = "^2.9.5"
+psycopg2-binary = "^2.9.9"
 
 requests = "^2.31.0"
 wheel = "^0.42.0"
@@ -73,6 +72,8 @@ pdfplumber = "^0.10.4"
 langchain-openai = "^0.0.7"
 python-docx = "^1.1.0"
 langchain-pinecone = "^0.0.3"
+trulens-eval = "0.24.0"
+uvicorn = "^0.27.1"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.1.0"
