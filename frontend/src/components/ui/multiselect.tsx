@@ -1,4 +1,3 @@
-import { cn } from '@/lib/utils';
 import * as React from 'react';
 
 import { Badge } from '@/components/ui/badge';
@@ -15,7 +14,9 @@ import {
 	PopoverContent,
 	PopoverTrigger,
 } from '@/components/ui/popover';
-import { Check, ChevronsUpDown, X } from 'lucide-react';
+import { useFileDeleteStore } from '@/store/filedeletestore';
+import { useFileUploadStore } from '@/store/fileupload-store';
+import { ChevronsUpDown, Trash2, Upload, X } from 'lucide-react';
 
 export type OptionType = {
 	label: string;
@@ -37,9 +38,17 @@ function MultiSelect({
 	...props
 }: MultiSelectProps) {
 	const [open, setOpen] = React.useState(false);
+	const { isDrawerOpen, setIsDrawerOpen } = useFileUploadStore();
+
+	const { isFileDeleteOpen, setIsFileDeleteOpen, setFileId } =
+		useFileDeleteStore();
 
 	const handleUnselect = (item: string) => {
 		onChange(selected.filter((i) => i !== item));
+	};
+
+	const handleFileUpload = () => {
+		setIsDrawerOpen(true);
 	};
 
 	return (
@@ -109,18 +118,30 @@ function MultiSelect({
 									);
 									setOpen(true);
 								}}
+								className='flex items-center justify-between'
 							>
-								<Check
-									className={cn(
-										'mr-2 h-4 w-4',
-										selected.includes(option.value)
-											? 'opacity-100'
-											: 'opacity-0'
-									)}
-								/>
 								{option.label}
+								<Button
+									className='h-6 w-6 bg-white border text-red-500 hover:text-white'
+									size={'icon'}
+									variant={'destructive'}
+									onClick={(e) => {
+										e.stopPropagation(); // Prevent the onSelect event from firing
+										setFileId(option.value);
+										setIsFileDeleteOpen(!isFileDeleteOpen);
+									}}
+								>
+									<Trash2 className='size-4 ' />
+								</Button>
 							</CommandItem>
 						))}
+						<CommandItem
+							onSelect={handleFileUpload}
+							className='flex items-center justify-center font-roboto py-4 cursor-pointer'
+						>
+							<Upload className='size-4 mr-2' />
+							Upload Document
+						</CommandItem>
 					</CommandGroup>
 				</Command>
 			</PopoverContent>

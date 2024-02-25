@@ -2,11 +2,21 @@
 import { getBaseURL } from '@/lib/utils';
 import { auth } from '@clerk/nextjs';
 
-export const getDocuments = async () => {
+export interface UserFileResponse {
+	total: number;
+	next_page: string;
+	prev_page: string;
+	data: {
+		id: string;
+		file_name: string;
+	}[];
+}
+
+export const getDocuments = async (): Promise<UserFileResponse> => {
 	const { userId, sessionId } = auth();
 
 	if (!userId) {
-		return { error: 'User is not logged in' };
+		throw new Error('User is not logged in');
 	}
 
 	const baseUrl = getBaseURL();
@@ -24,15 +34,19 @@ export const getDocuments = async () => {
 		cache: 'no-store',
 	});
 
-	if (!response.ok) {
+	if (response.status == 404) {
 		console.log('GET /user_files failed', response.status, response.statusText);
-		return { error: 'Unable to fetch documents' };
+		return { total: 0, next_page: '', prev_page: '', data: [] };
+	} else if (!response.ok) {
+		console.log('GET /user_files failed', response.status, response.statusText);
+		// return { error: 'Unable to fetch documents' };
+		throw new Error('Unable to fetch documents');
 	}
 
 	const json = await response.json();
 	console.log('GET /user_files success', json);
 
-	return { data: json };
+	return json;
 };
 
 type Response = {

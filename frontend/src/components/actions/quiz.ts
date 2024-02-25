@@ -13,7 +13,7 @@ export interface QuizGenerate {
 	questions_type: string[];
 	difficulty: DifficultyLevel;
 	user_prompt: string;
-	file_ids: string[];
+	user_file_ids: string[];
 }
 
 export interface QuizGenerateReponse {
@@ -72,7 +72,10 @@ export async function createQuiz(data: QuizGenerate): Promise<{
 }
 
 export async function getQuizList(): Promise<{
-	error?: string;
+	error?: {
+		message: string;
+		status: number;
+	};
 	data?: {
 		total: number;
 		next_page: string;
@@ -82,7 +85,12 @@ export async function getQuizList(): Promise<{
 }> {
 	const { userId, sessionId } = auth();
 	if (!userId) {
-		return { error: 'User is not logged in' };
+		return {
+			error: {
+				message: 'User is not logged in',
+				status: 401,
+			},
+		};
 	}
 
 	const baseUrl = getBaseURL();
@@ -97,10 +105,21 @@ export async function getQuizList(): Promise<{
 		},
 	});
 
-	if (!response.ok) {
+	if (response.status === 404) {
 		console.log('GET /quiz failed', response.status, response.statusText);
 		return {
-			error: 'Unable to get quiz list',
+			error: {
+				message: 'No quizzes found. Please create a quiz to get started',
+				status: 404,
+			},
+		};
+	} else if (!response.ok) {
+		console.log('GET /quiz failed', response.status, response.statusText);
+		return {
+			error: {
+				message: 'Unable to get quiz list',
+				status: response.status,
+			},
 		};
 	}
 

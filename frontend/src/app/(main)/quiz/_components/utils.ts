@@ -32,39 +32,39 @@ export type Documents = {
 }[];
 
 export const QuizGenerateValidator = z.object({
-	quizTitle: z
+	title: z
 		.string({
 			required_error: 'Please enter a title for the quiz.',
 		})
 		.min(2, {
 			message: 'Quiz Title is too short.',
 		}),
-	documentSelection: z.array(z.string()).nonempty({
+	file_ids: z.array(z.string()).nonempty({
 		message: 'Please select at least one document to make a quiz from.',
 	}),
-	quizDuration: z
+	time_limit: z
 		.string({
 			required_error: 'Please enter the time for the quiz.',
 		})
 		.min(1, {
 			message: 'Quiz time must be at least 1 minute.',
 		}),
-	questionCount: z
+	total_questions_to_generate: z
 		.string({
 			required_error: 'Please enter the number of questions.',
 		})
 		.min(1, {
 			message: 'Number of questions must be at least 1.',
 		}),
-	questionTypeSelection: z
+	questions_type: z
 		.array(z.string())
 		.refine((value) => value.some((item) => item), {
 			message: 'Please select at least one question type.',
 		}),
-	difficultyLevelSelection: z.nativeEnum(DifficultyLevel, {
+	difficulty: z.nativeEnum(DifficultyLevel, {
 		required_error: 'Please select the difficulty level.',
 	}),
-	userInstructions: z
+	user_prompt: z
 		.string({
 			required_error: 'Please enter user instructions.',
 		})

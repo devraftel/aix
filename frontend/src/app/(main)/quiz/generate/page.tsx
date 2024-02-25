@@ -1,13 +1,16 @@
+import { fetchDocuments } from '@/components/actions/fetch-document';
 import MaxWidthWrapper from '@/components/max-width-wrapper';
 import { DrawerDemo } from '../_components/fileupload';
 import { QuizeForm } from '../_components/quiz-form';
 
-export default function QuizGenerate() {
+export default async function QuizGenerate() {
+	const data = await fetchDocuments({ pageParam: 1 });
+
 	return (
 		<>
 			<MaxWidthWrapper className='mb-12 mt-14 sm:mt-20 flex flex-col items-center justify-center text-center'>
-				<div className='bg-gradient-to-br from-gray-200/80 to-gray-300/10 border border-gray-200 drop-shadow-sm flex flex-col items-center justify-center p-7 rounded-3xl'>
-					<QuizeForm />
+				<div className='bg-aix-frosted border border-aix-200 drop-shadow-sm px-[3rem] py-[2rem] rounded-3xl'>
+					<QuizeForm initialDocument={data} />
 				</div>
 				<DrawerDemo />
 			</MaxWidthWrapper>

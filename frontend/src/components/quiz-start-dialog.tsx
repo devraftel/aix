@@ -13,6 +13,7 @@ import { useQuizStartStore } from '../store/quiz-start-store';
 
 export function QuizStartDialog() {
 	const { isQuizStartOpen, setIsQuizStartOpen, quizId } = useQuizStartStore();
+
 	const router = useRouter();
 
 	const pathname = usePathname();

@@ -3,6 +3,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 
+import { UserFileResponse } from '@/components/actions/document';
 import { fetchDocuments } from '@/components/actions/fetch-document';
 import { QuizGenerate, createQuiz } from '@/components/actions/quiz';
 import { Button } from '@/components/ui/button';
@@ -32,19 +33,24 @@ import {
 	questionTypes,
 } from './utils';
 
-export function QuizeForm() {
+interface QuizGenerateFormProps {
+	initialDocument: UserFileResponse;
+}
+
+export function QuizeForm({ initialDocument }: QuizGenerateFormProps) {
 	const router = useRouter();
 	const { isDrawerOpen, setIsDrawerOpen } = useFileUploadStore();
+
 	const form = useForm<QuizGenerateRequest>({
 		resolver: zodResolver(QuizGenerateValidator),
 		defaultValues: {
-			quizTitle: '',
-			documentSelection: [],
-			quizDuration: undefined,
-			questionCount: undefined,
-			questionTypeSelection: [],
-			difficultyLevelSelection: undefined,
-			userInstructions: '',
+			title: '',
+			file_ids: [],
+			time_limit: undefined,
+			total_questions_to_generate: undefined,
+			questions_type: [],
+			difficulty: undefined,
+			user_prompt: '',
 		},
 	});
 
@@ -53,16 +59,20 @@ export function QuizeForm() {
 		queryFn: fetchDocuments,
 		initialPageParam: 1,
 		getNextPageParam: (_, pages) => pages.length + 1,
+		initialData: {
+			pages: [initialDocument],
+			pageParams: [1],
+		},
 	});
 
 	if (isLoading || error) {
 		return <div>Loading...</div>;
 	}
 
-	const document = data?.pages.flatMap((page) => page.data)[0];
+	const document = data?.pages.flatMap((page) => page.data);
 
 	const documents: OptionType[] =
-		document?.data.map((item: { id: string; file_name: string }) => ({
+		document?.map((item: { id: string; file_name: string }) => ({
 			value: item.id,
 			label: item.file_name,
 		})) ?? [];
@@ -70,13 +80,13 @@ export function QuizeForm() {
 	async function onSubmit(data: QuizGenerateRequest) {
 		try {
 			const payload: QuizGenerate = {
-				title: data.quizTitle,
-				time_limit: `PT${data.quizDuration}M`,
-				total_questions_to_generate: Number(data.questionCount),
-				questions_type: data.questionTypeSelection,
-				difficulty: data.difficultyLevelSelection,
-				user_prompt: data.userInstructions,
-				file_ids: data.documentSelection,
+				title: data.title,
+				time_limit: `PT${data.time_limit}M`,
+				total_questions_to_generate: Number(data.total_questions_to_generate),
+				questions_type: data.questions_type,
+				difficulty: data.difficulty,
+				user_prompt: data.user_prompt,
+				user_file_ids: data.file_ids,
 			};
 
 			const res = await createQuiz(payload);
@@ -89,7 +99,7 @@ export function QuizeForm() {
 			}
 
 			toast('Quiz Generated Successfully', {
-				description: data.quizTitle,
+				description: data.title,
 			});
 			form.reset();
 			router.push(`/quiz`);
@@ -113,7 +123,7 @@ export function QuizeForm() {
 
 				<FormField
 					control={form.control}
-					name='quizTitle'
+					name='title'
 					render={({ field }) => (
 						<FormItem>
 							<FormLabel>Title</FormLabel>
@@ -130,7 +140,7 @@ export function QuizeForm() {
 
 				<FormField
 					control={form.control}
-					name='documentSelection'
+					name='file_ids'
 					render={({ field }) => (
 						<FormItem>
 							<FormLabel>Documents</FormLabel>
@@ -158,7 +168,7 @@ export function QuizeForm() {
 
 				<FormField
 					control={form.control}
-					name='quizDuration'
+					name='time_limit'
 					render={({ field }) => (
 						<FormItem>
 							<FormLabel>Quiz Duration (in minutes)</FormLabel>
@@ -166,6 +176,7 @@ export function QuizeForm() {
 								<Input
 									type='number'
 									placeholder='Enter the time for the quiz.'
+									min={1}
 									{...field}
 								/>
 							</FormControl>
@@ -176,7 +187,7 @@ export function QuizeForm() {
 
 				<FormField
 					control={form.control}
-					name='questionTypeSelection'
+					name='questions_type'
 					render={() => (
 						<FormItem>
 							<div className='mb-4'>
@@ -189,7 +200,7 @@ export function QuizeForm() {
 								<FormField
 									key={item.id}
 									control={form.control}
-									name='questionTypeSelection'
+									name='questions_type'
 									render={({ field }) => {
 										return (
 											<FormItem
@@ -225,7 +236,7 @@ export function QuizeForm() {
 
 				<FormField
 					control={form.control}
-					name='questionCount'
+					name='total_questions_to_generate'
 					render={({ field }) => (
 						<FormItem>
 							<FormLabel>Number of Questions</FormLabel>
@@ -233,6 +244,7 @@ export function QuizeForm() {
 								<Input
 									type='number'
 									placeholder='Enter the number of questions.'
+									min={1}
 									{...field}
 								/>
 							</FormControl>
@@ -243,7 +255,7 @@ export function QuizeForm() {
 
 				<FormField
 					control={form.control}
-					name='difficultyLevelSelection'
+					name='difficulty'
 					render={({ field }) => (
 						<FormItem className='space-y-3'>
 							<FormLabel>
@@ -277,7 +289,7 @@ export function QuizeForm() {
 
 				<FormField
 					control={form.control}
-					name='userInstructions'
+					name='user_prompt'
 					render={({ field }) => (
 						<FormItem>
 							<FormLabel>Quiz Instructions</FormLabel>
