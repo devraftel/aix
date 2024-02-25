@@ -1,4 +1,5 @@
 import { DeleteQuiz } from '@/components/delete-quiz';
+import { Footer } from '@/components/footer';
 import Navbar from '@/components/navbar';
 import { QuizStartDialog } from '@/components/quiz-start-dialog';
 import { ReactNode } from 'react';
@@ -12,6 +13,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
 				<QuizStartDialog />
 				<DeleteQuiz />
 			</main>
+			<Footer />
 		</div>
 	);
 };

@@ -45,7 +45,7 @@ export default function QuizAttemp({ params }: QuizAttempProps) {
 			toast('Quiz Completed', { description: 'Quiz has been submitted' });
 			submitQuiz(quizAttempt?.id!);
 			reset();
-			router.push('/quiz');
+			router.push(`/quiz/${quizAttempt?.id}/feedback`);
 		}
 	}, [
 		currentQuestionIndex,

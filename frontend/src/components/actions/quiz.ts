@@ -1,5 +1,5 @@
 'use server';
-import { DifficultyLevel } from '@/app/(normal-pages)/quiz/_components/utils';
+import { DifficultyLevel } from '@/app/(main)/quiz/_components/utils';
 import { getBaseURL } from '@/lib/utils';
 import dayjs from 'dayjs';
 
@@ -403,16 +403,18 @@ export const quizFeedback = async (
 		return { error: 'Quiz ID is required to get feedback.' };
 	}
 
-	return { data: dummyfeedback };
+	// return { data: dummyfeedback };
 
 	const { userId, sessionId } = auth();
 	if (!userId) {
 		return { error: 'User is not logged in' };
 	}
 
+	console.log('Session', sessionId);
+
 	const baseUrl = getBaseURL();
 
-	const response = await fetch(`${baseUrl}/quiz/${quizId}/feedback`, {
+	const response = await fetch(`${baseUrl}/quiz-attempt/${quizId}/graded`, {
 		method: 'GET',
 		headers: {
 			Authorization: `Bearer ${sessionId}`,
@@ -432,7 +434,7 @@ export const quizFeedback = async (
 
 	console.log('GET /quiz/:id/feedback success', json);
 
-	return { data: dummyfeedback };
+	return { data: json };
 };
 
 const dummyfeedback = {

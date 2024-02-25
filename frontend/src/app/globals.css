@@ -1,3 +1,12 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+    h1, h2, h3, h4, h5, h6 {
+        @apply font-roboto text-aix-900 scroll-m-20 tracking-tight pb-2 font-medium;
+    }
+    p {
+        @apply text-aix-700 leading-7 md:leading-6 [&:not(:first-child)]:mt-6 text-balance
+    }
+}

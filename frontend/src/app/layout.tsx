@@ -29,7 +29,7 @@ export default function RootLayout({
 			<html lang='en'>
 				<body
 					className={cn(
-						'min-h-screen font-sans antialiased grainy bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-100',
+						'min-h-screen font-sans antialiased grainy bg-aix-100 text-aix-800',
 						openSans.className,
 						robot.variable
 					)}
