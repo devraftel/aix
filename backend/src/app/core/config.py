@@ -43,7 +43,7 @@ class Settings(BaseSettings):
             #         path=info.data["DATABASE_NAME"],
             #     )
             if v == "":
-                return info.data["ASYNC_DATABASE_URI"]
+                return info.data["ASYNC_DATABASE_URL"]
         return v
 
     BACKEND_CORS_ORIGINS: list[str] | list[AnyHttpUrl] | None = None

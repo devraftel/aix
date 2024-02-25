@@ -1,5 +1,6 @@
 from uuid import UUID
-from sqlmodel import Field, SQLModel, Relationship
+from sqlmodel import Field
+from app.models.base_uuid_model import SQLModel
 
 # https://sqlmodel.tiangolo.com/tutorial/many-to-many/create-models-with-link/
 

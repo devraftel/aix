@@ -7,8 +7,8 @@ from datetime import datetime
 from app import crud
 from app.api.deps import get_db
 from app.core.auth import clerk_auth
-from app.schemas.quiz_attempt_schema import (IQuizAttemptCreate, IQuizAttemptUpdate, IQuizAttemptRead, IQuizAttemptCreateResponse,
-                                             IQuizAnswerSlotCreate, IQuizAnswerSlotUpdate, IQuizAnswerSlotRead, IQuizAttemptGradedRead, transform_quiz_attempt)
+from app.schemas.quiz_attempt_schema import (IQuizAttemptCreate, IQuizAttemptRead, IQuizAttemptCreateResponse,
+                                             IQuizAnswerSlotCreate, IQuizAnswerSlotRead, IQuizAttemptGradedRead, transform_quiz_attempt)
 
 router = APIRouter()
 @router.post("/create/{quiz_id}", response_model=IQuizAttemptCreateResponse)

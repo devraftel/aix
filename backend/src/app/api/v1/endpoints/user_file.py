@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile
+from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, BackgroundTasks
 from sqlmodel.ext.asyncio.session import AsyncSession
 from uuid import UUID
 from typing import Annotated
@@ -8,6 +8,7 @@ from app.api.deps import get_db
 from app.schemas.user_file_schema import (IUserFileRead, IPaginatedUserFileList, IUserFileRemove)
 from app.models.user_file_modal import UserFile
 from app.core.auth import clerk_auth
+from app.core.document_processing.processor import process_uploaded_file
 
 router = APIRouter()
 
@@ -49,15 +50,16 @@ async def list_user_files(
 async def create_user_file_batch_rag(
         user_id: Annotated[str, Depends(clerk_auth.get_session_details)],
         file: UploadFile,
+        background_tasks: BackgroundTasks,
         db_session: Annotated[AsyncSession, Depends(get_db)]
 ):
     """
     Add File Metadata to UserTable & Batch, Embed and save File Content to RAG
     """
     try:
-        # print("\n----------file_obj----------\n", file)
-        # print("\n----------filename----------\n", file.filename)
-        # print("\n----------content_type----------\n", file.content_type)
+        print("\n----------file_obj----------\n", file)
+        print("\n----------filename----------\n", file.filename)
+        print("\n----------content_type----------\n", file.content_type)
 
         # 1. Save File Metadata to UserTable
         file_obj_sanitized = UserFile(user_id=user_id, file_name=file.filename)
@@ -67,15 +69,10 @@ async def create_user_file_batch_rag(
 
         print("\n----------file_in_db----------\n", file_in_db)
 
-        # TODO: 2. Save File Content to Pinecone using RAG Pipeline
-        # https://fastapi.tiangolo.com/tutorial/request-files/
-        # Use await to get the file i.e file.METHODCALLED()
-
-        # 3. Update Table to store total FileBytes to DB IF POSSIBLE (Optional)
-        # updated_file= await crud.user_file.update_file_content_size(file_id=file_in_db.id, byte_size=10, db_session=db_session)
-        # return updated_file
-
+        # 2.1 RUN A BACKGROUND TASK TO Save File Content to Pinecone using RAG Pipeline
+        background_tasks.add_task(process_uploaded_file, file, file_in_db.id, user_id, file.filename if file.filename else "Untitled")
         return file_in_db
+        # pass
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
@@ -136,5 +133,3 @@ async def read_user_files_metadata(
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
-# TODO: After all AI Pipelines - An Endpoint to Retrieve File Content by its id
