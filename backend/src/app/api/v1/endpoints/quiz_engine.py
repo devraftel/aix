@@ -157,6 +157,10 @@ async def generate_quiz_rag_ai_pipeline(
                 else:
                     print("Unexpected item structure:", element)
 
+                # After iterating through all file_ids, check if any content was retrieved
+        if not acc_retrieve_from_pinecone:
+            acc_retrieve_from_pinecone = "Generate Quiz from instructions"
+
 
         print("\n---- acc_retrieve_from_pinecone -----\n", acc_retrieve_from_pinecone, "\n--------\n")
         
@@ -165,7 +169,7 @@ async def generate_quiz_rag_ai_pipeline(
                                        questions_to_generate=generate_quiz_data.total_questions_to_generate, 
                                        question_type=generate_quiz_data.questions_type,
                                        content=acc_retrieve_from_pinecone,
-                                       difficulty=generate_quiz_data.difficulty,)
+                                       difficulty=generate_quiz_data.difficulty)
 
         print("\n---- raq_gen_questions -----\n", raq_gen_questions, "\n--------\n")
 

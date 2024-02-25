@@ -1211,13 +1211,13 @@ pinecone-client = ">=3,<4"
 
 [[package]]
 name = "langsmith"
-version = "0.1.7"
+version = "0.1.8"
 description = "Client library to connect to the LangSmith LLM Tracing and Evaluation Platform."
 optional = false
 python-versions = ">=3.8.1,<4.0"
 files = [
-    {file = "langsmith-0.1.7-py3-none-any.whl", hash = "sha256:391320049d5e4e630b92b517d144e181caa21b8d80192d8d4bfd24be51aab40c"},
-    {file = "langsmith-0.1.7.tar.gz", hash = "sha256:764a425d332539921d7e861c0276e4c46ba7af0f6cb47b5328290929218d41a8"},
+    {file = "langsmith-0.1.8-py3-none-any.whl", hash = "sha256:f4320fd80ec9d311a648e7d4c44e0814e6e5454772c5026f40db0307bc07e287"},
+    {file = "langsmith-0.1.8.tar.gz", hash = "sha256:ab5f1cdfb7d418109ea506d41928fb8708547db2f6c7f7da7cfe997f3c55767b"},
 ]
 
 [package.dependencies]
@@ -3387,5 +3387,5 @@ multidict = ">=4.0"
 
 [metadata]
 lock-version = "2.0"
-python-versions = ">3.11,<3.13"
-content-hash = "070ff1a1d81a5055a24fbec43e6d777e15b36b69eda3421461a0fa5a5bbfa794"
+python-versions = ">=3.11,<=3.12"
+content-hash = "8048273bfe8fff2dd6e00f9840cbf7f3e7df4bc967eed317569c0cb0f0ef7147"

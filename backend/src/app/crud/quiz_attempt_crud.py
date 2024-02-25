@@ -123,12 +123,26 @@ class CRUDQuizAttemptEngine:
                         joinedload(QuizAnswerSlot.selected_options)   # type: ignore
                         )
                 ).where(QuizAttempt.id == quiz_attempt_id))
-            return graded_quiz_attempt.one_or_none()
+            graded_quiz_attempt_res= graded_quiz_attempt.one_or_none()
+            if graded_quiz_attempt_res is None:
+                raise ValueError("Invalid Quiz Attempt")
+        
+            
+            return graded_quiz_attempt_res
         except Exception as e:
             print("\n-----Error in graded_quiz_attempt_by_id----\n", e)
             await db_session.rollback()
             raise e
 
+    # Get Quiz Attempt Based on User ID and Quiz ID
+    async def get_quiz_attempt_by_user_id_and_quiz_id(self, db_session: AsyncSession, user_id: str, quiz_id: UUID):
+        """
+        Get Quiz Attempt by User ID and Quiz ID
+        """
+        attempt_quiz = await db_session.exec(select(QuizAttempt).where(and_(QuizAttempt.user_id == user_id, QuizAttempt.quiz_id == quiz_id)))
+        attempt_quiz_ret = attempt_quiz.one_or_none()
+        print("\n-----attempt_quiz_ret----\n", attempt_quiz_ret)
+        return attempt_quiz_ret
 class CRUDQuizAnswerSlotEngine:
     # 1. Create Quiz Answer Slot
     async def create_quiz_answer_slot(self, db_session: AsyncSession, quiz_answer_slot: IQuizAnswerSlotCreate):

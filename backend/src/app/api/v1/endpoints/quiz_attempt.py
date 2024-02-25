@@ -137,31 +137,58 @@ async def get_graded_quiz_attempt_by_id(
     try:
         quiz_attempt = await crud.quiz_attempt.graded_quiz_attempt_by_id(db_session, quiz_attempt_id)
 
-        print("\n------------ quiz_attempt ------------\n\n", quiz_attempt)
-        print("\n quiz_attempt.quiz_answers \n", quiz_attempt.quiz_answers)
+        if not quiz_attempt:
+            raise ValueError("Invalid Quiz Attempt ID")
+        
+        if not quiz_attempt.time_finish:
+            raise ValueError("Quiz Attempt is not finished yet")
+        
+        if quiz_attempt.time_finish:
+            raise ValueError("Quiz Attempt is still active")
 
-        print("\n------------ .quiz_answers.quiz_question_feedback ------------\n")
-        for answer in quiz_attempt.quiz_answers:
-            print(answer.quiz_question_feedback)
+        # print("\n------------ quiz_attempt ------------\n\n", quiz_attempt)
+        # print("\n quiz_attempt.quiz_answers \n", quiz_attempt.quiz_answers)
 
-        print("\n------------ .quiz_answers.selected_options ------------\n")
-        for answer in quiz_attempt.quiz_answers:
-            for selected_option in answer.selected_options:
-                print(selected_option)
+        # print("\n------------ .quiz_answers.quiz_question_feedback ------------\n")
+        # for answer in quiz_attempt.quiz_answers:
+        #     print(answer.quiz_question_feedback)
 
-        # Correctly iterating over quiz_answers to access each QuizAnswerSlot's related question
-        print("\n------------ .quiz_answers.question ------------\n")
-        for answer_slot in quiz_attempt.quiz_answers:
-            print(answer_slot.question)  
+        # print("\n------------ .quiz_answers.selected_options ------------\n")
+        # for answer in quiz_attempt.quiz_answers:
+        #     for selected_option in answer.selected_options:
+        #         print(selected_option)
 
-        print("\n------------ .quiz_answers.question.mcq_options ------------\n")
-        for answer_slot in quiz_attempt.quiz_answers:
-            if hasattr(answer_slot, 'question') and answer_slot.question:  # Check if 'question' is loaded and not None
-                print(answer_slot.question.mcq_options)  #'mcq_options' is an attribute or related object of 'question'
+        # # Correctly iterating over quiz_answers to access each QuizAnswerSlot's related question
+        # print("\n------------ .quiz_answers.question ------------\n")
+        # for answer_slot in quiz_attempt.quiz_answers:
+        #     print(answer_slot.question)  
+
+        # print("\n------------ .quiz_answers.question.mcq_options ------------\n")
+        # for answer_slot in quiz_attempt.quiz_answers:
+        #     if hasattr(answer_slot, 'question') and answer_slot.question:  # Check if 'question' is loaded and not None
+        #         print(answer_slot.question.mcq_options)  #'mcq_options' is an attribute or related object of 'question'
 
         quiz_attempt_data = transform_quiz_attempt(quiz_attempt)
         return quiz_attempt_data
 
 
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+#Get Quiz Attempt Based on User ID and Quiz ID
+@router.get("/user/{quiz_id}", response_model=IQuizAttemptRead) 
+async def get_quiz_attempt_by_user_and_quiz_id(
+    user_id: Annotated[str, Depends(clerk_auth.get_session_details)],
+    quiz_id: UUID,
+    db_session: Annotated[AsyncSession, Depends(get_db)]
+):
+    try:
+        quiz_attempt =  await crud.quiz_attempt.get_quiz_attempt_by_user_id_and_quiz_id(user_id=user_id, quiz_id=quiz_id, db_session=db_session)
+        print("\n------------ quiz_attempt ------------\n\n", quiz_attempt)
+        return quiz_attempt
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
