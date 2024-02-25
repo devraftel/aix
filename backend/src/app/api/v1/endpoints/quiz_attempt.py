@@ -179,16 +179,19 @@ async def get_graded_quiz_attempt_by_id(
         raise HTTPException(status_code=500, detail=str(e))
     
 #Get Quiz Attempt Based on User ID and Quiz ID
-@router.get("/user/{quiz_id}", response_model=IQuizAttemptRead) 
-async def get_quiz_attempt_by_user_and_quiz_id(
+@router.get("/user/{quiz_id}", response_model=IQuizAttemptGradedRead) 
+async def get_quiz_attempt_grade_by_user_and_quiz_id(
     user_id: Annotated[str, Depends(clerk_auth.get_session_details)],
     quiz_id: UUID,
     db_session: Annotated[AsyncSession, Depends(get_db)]
 ):
     try:
-        quiz_attempt =  await crud.quiz_attempt.get_quiz_attempt_by_user_id_and_quiz_id(user_id=user_id, quiz_id=quiz_id, db_session=db_session)
-        print("\n------------ quiz_attempt ------------\n\n", quiz_attempt)
-        return quiz_attempt
+        quiz_attempt_id =  await crud.quiz_attempt.get_quiz_attempt_by_user_id_and_quiz_id(user_id=user_id, quiz_id=quiz_id, db_session=db_session)
+        print("\n------------ quiz_attempt ------------\n\n", quiz_attempt_id)
+        
+        graded_quiz_attempt = await crud.quiz_attempt.graded_quiz_attempt_by_id(db_session, quiz_attempt_id)
+        return graded_quiz_attempt
+    
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

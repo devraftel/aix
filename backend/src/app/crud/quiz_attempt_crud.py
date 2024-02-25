@@ -139,7 +139,7 @@ class CRUDQuizAttemptEngine:
         """
         Get Quiz Attempt by User ID and Quiz ID
         """
-        attempt_quiz = await db_session.exec(select(QuizAttempt).where(and_(QuizAttempt.user_id == user_id, QuizAttempt.quiz_id == quiz_id)))
+        attempt_quiz = await db_session.exec(select(QuizAttempt.id).where(and_(QuizAttempt.user_id == user_id, QuizAttempt.quiz_id == quiz_id)))
         attempt_quiz_ret = attempt_quiz.one_or_none()
         print("\n-----attempt_quiz_ret----\n", attempt_quiz_ret)
         return attempt_quiz_ret
