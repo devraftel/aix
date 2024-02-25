@@ -39,7 +39,7 @@ exclude = ["alembic", "__pycache__"]
 
 
 [tool.poetry.dependencies]
-python = ">3.11,<3.13"
+python = ">=3.11,<=3.12"
 alembic = "^1.13.0"
 asyncpg = "^0.29.0"
 fastapi = {extras = ["all"], version = "^0.104.1"}
