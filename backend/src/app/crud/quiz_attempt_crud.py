@@ -126,8 +126,11 @@ class CRUDQuizAttemptEngine:
             graded_quiz_attempt_res= graded_quiz_attempt.one_or_none()
             if graded_quiz_attempt_res is None:
                 raise ValueError("Invalid Quiz Attempt")
-        
             
+            if graded_quiz_attempt_res.attempt_score is None:
+                raise ValueError("Quiz Attempt is not graded yet")
+        
+            print("graded_quiz_attempt_res", graded_quiz_attempt_res)
             return graded_quiz_attempt_res
         except Exception as e:
             print("\n-----Error in graded_quiz_attempt_by_id----\n", e)
@@ -139,10 +142,15 @@ class CRUDQuizAttemptEngine:
         """
         Get Quiz Attempt by User ID and Quiz ID
         """
+        print("\n-----user_id----\n", user_id)
+        print("\n-----quiz_id----\n", quiz_id)
         attempt_quiz = await db_session.exec(select(QuizAttempt.id).where(and_(QuizAttempt.user_id == user_id, QuizAttempt.quiz_id == quiz_id)))
+        print("\n-----attempt_quiz----\n", attempt_quiz)
+
         attempt_quiz_ret = attempt_quiz.one_or_none()
         print("\n-----attempt_quiz_ret----\n", attempt_quiz_ret)
         return attempt_quiz_ret
+    
 class CRUDQuizAnswerSlotEngine:
     # 1. Create Quiz Answer Slot
     async def create_quiz_answer_slot(self, db_session: AsyncSession, quiz_answer_slot: IQuizAnswerSlotCreate):

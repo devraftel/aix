@@ -189,8 +189,18 @@ async def get_quiz_attempt_grade_by_user_and_quiz_id(
         quiz_attempt_id =  await crud.quiz_attempt.get_quiz_attempt_by_user_id_and_quiz_id(user_id=user_id, quiz_id=quiz_id, db_session=db_session)
         print("\n------------ quiz_attempt ------------\n\n", quiz_attempt_id)
         
-        graded_quiz_attempt = await crud.quiz_attempt.graded_quiz_attempt_by_id(db_session, quiz_attempt_id)
-        return graded_quiz_attempt
+        graded_quiz_attempt = await crud.quiz_attempt.graded_quiz_attempt_by_id(db_session, quiz_attempt_id=quiz_attempt_id)
+
+        if not graded_quiz_attempt:
+            raise ValueError("Invalid Quiz Attempt ID")
+        
+        if not graded_quiz_attempt.time_finish:
+            raise ValueError("Quiz Attempt is not finished yet")
+        
+        quiz_attempt_data = transform_quiz_attempt(graded_quiz_attempt)
+        
+        return quiz_attempt_data
+
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
