@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: ec84731f0369
+Revision ID: 40d1754ab283
 Revises: 
-Create Date: 2024-02-22 19:32:16.777920
+Create Date: 2024-02-24 09:12:40.124816
 
 """
 from alembic import op
@@ -12,7 +12,7 @@ import sqlmodel # added
 
 
 # revision identifiers, used by Alembic.
-revision = 'ec84731f0369'
+revision = '40d1754ab283'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -48,6 +48,15 @@ def upgrade():
     )
     op.create_index(op.f('ix_UserFile_id'), 'UserFile', ['id'], unique=False)
     op.create_index(op.f('ix_UserFile_user_id'), 'UserFile', ['user_id'], unique=False)
+    op.create_table('LinkQuizFile',
+    sa.Column('quiz_id', sqlmodel.sql.sqltypes.GUID(), nullable=False),
+    sa.Column('user_file_id', sqlmodel.sql.sqltypes.GUID(), nullable=False),
+    sa.ForeignKeyConstraint(['quiz_id'], ['Quiz.id'], ),
+    sa.ForeignKeyConstraint(['user_file_id'], ['UserFile.id'], ),
+    sa.PrimaryKeyConstraint('quiz_id', 'user_file_id')
+    )
+    op.create_index(op.f('ix_LinkQuizFile_quiz_id'), 'LinkQuizFile', ['quiz_id'], unique=False)
+    op.create_index(op.f('ix_LinkQuizFile_user_file_id'), 'LinkQuizFile', ['user_file_id'], unique=False)
     op.create_table('Question',
     sa.Column('question_text', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.Column('difficulty', sa.Enum('easy', 'medium', 'hard', name='questiondifficultyenum'), nullable=False),
@@ -67,11 +76,9 @@ def upgrade():
     op.create_index(op.f('ix_Question_question_type'), 'Question', ['question_type'], unique=False)
     op.create_index(op.f('ix_Question_user_id'), 'Question', ['user_id'], unique=False)
     op.create_table('QuizFeedback',
-    sa.Column('feedback_score', sa.Integer(), nullable=True),
     sa.Column('feedback_text', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
     sa.Column('llm_learning_json', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
     sa.Column('quiz_id', sqlmodel.sql.sqltypes.GUID(), nullable=False),
-    sa.Column('user_id', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.Column('id', sqlmodel.sql.sqltypes.GUID(), nullable=False),
     sa.Column('updated_at', sa.DateTime(), nullable=True),
     sa.Column('created_at', sa.DateTime(), nullable=True),
@@ -80,16 +87,6 @@ def upgrade():
     )
     op.create_index(op.f('ix_QuizFeedback_id'), 'QuizFeedback', ['id'], unique=False)
     op.create_index(op.f('ix_QuizFeedback_quiz_id'), 'QuizFeedback', ['quiz_id'], unique=False)
-    op.create_index(op.f('ix_QuizFeedback_user_id'), 'QuizFeedback', ['user_id'], unique=False)
-    op.create_table('linkquizfile',
-    sa.Column('quiz_id', sqlmodel.sql.sqltypes.GUID(), nullable=False),
-    sa.Column('user_file_id', sqlmodel.sql.sqltypes.GUID(), nullable=False),
-    sa.ForeignKeyConstraint(['quiz_id'], ['Quiz.id'], ),
-    sa.ForeignKeyConstraint(['user_file_id'], ['UserFile.id'], ),
-    sa.PrimaryKeyConstraint('quiz_id', 'user_file_id')
-    )
-    op.create_index(op.f('ix_linkquizfile_quiz_id'), 'linkquizfile', ['quiz_id'], unique=False)
-    op.create_index(op.f('ix_linkquizfile_user_file_id'), 'linkquizfile', ['user_file_id'], unique=False)
     op.create_table('MCQOptions',
     sa.Column('question_id', sqlmodel.sql.sqltypes.GUID(), nullable=True),
     sa.Column('option_text', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
@@ -121,10 +118,8 @@ def upgrade():
     op.create_index(op.f('ix_QuizAttempt_quiz_id'), 'QuizAttempt', ['quiz_id'], unique=False)
     op.create_index(op.f('ix_QuizAttempt_user_id'), 'QuizAttempt', ['user_id'], unique=False)
     op.create_table('QuizQuestionFeedback',
-    sa.Column('feedback_score', sa.Integer(), nullable=True),
     sa.Column('feedback_text', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
     sa.Column('llm_learning_json', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
-    sa.Column('user_id', sqlmodel.sql.sqltypes.AutoString(), nullable=False),
     sa.Column('question_id', sqlmodel.sql.sqltypes.GUID(), nullable=False),
     sa.Column('id', sqlmodel.sql.sqltypes.GUID(), nullable=False),
     sa.Column('updated_at', sa.DateTime(), nullable=True),
@@ -134,17 +129,15 @@ def upgrade():
     )
     op.create_index(op.f('ix_QuizQuestionFeedback_id'), 'QuizQuestionFeedback', ['id'], unique=False)
     op.create_index(op.f('ix_QuizQuestionFeedback_question_id'), 'QuizQuestionFeedback', ['question_id'], unique=False)
-    op.create_index(op.f('ix_QuizQuestionFeedback_user_id'), 'QuizQuestionFeedback', ['user_id'], unique=False)
     op.create_table('QuizAnswerSlot',
     sa.Column('quiz_attempt_id', sqlmodel.sql.sqltypes.GUID(), nullable=False),
     sa.Column('question_id', sqlmodel.sql.sqltypes.GUID(), nullable=False),
     sa.Column('question_type', sa.Enum('single_select_mcq', 'multi_select_mcq', 'open_text_question', name='questiontypeenum'), nullable=False),
-    sa.Column('answer_id', sqlmodel.sql.sqltypes.GUID(), nullable=True),
     sa.Column('answer_text', sqlmodel.sql.sqltypes.AutoString(), nullable=True),
     sa.Column('id', sqlmodel.sql.sqltypes.GUID(), nullable=False),
     sa.Column('updated_at', sa.DateTime(), nullable=True),
     sa.Column('created_at', sa.DateTime(), nullable=True),
-    sa.Column('points_awarded', sa.Integer(), nullable=True),
+    sa.Column('points_awarded', sa.Float(), nullable=True),
     sa.Column('quiz_question_feedback_id', sqlmodel.sql.sqltypes.GUID(), nullable=True),
     sa.ForeignKeyConstraint(['question_id'], ['Question.id'], ),
     sa.ForeignKeyConstraint(['quiz_attempt_id'], ['QuizAttempt.id'], ),
@@ -170,11 +163,23 @@ def upgrade():
     op.create_index(op.f('ix_QuizGrade_quiz_attempt_id'), 'QuizGrade', ['quiz_attempt_id'], unique=False)
     op.create_index(op.f('ix_QuizGrade_quiz_id'), 'QuizGrade', ['quiz_id'], unique=False)
     op.create_index(op.f('ix_QuizGrade_user_id'), 'QuizGrade', ['user_id'], unique=False)
+    op.create_table('QuizAnswerOption',
+    sa.Column('quiz_answer_slot_id', sqlmodel.sql.sqltypes.GUID(), nullable=False),
+    sa.Column('option_id', sqlmodel.sql.sqltypes.GUID(), nullable=False),
+    sa.Column('id', sqlmodel.sql.sqltypes.GUID(), nullable=False),
+    sa.Column('updated_at', sa.DateTime(), nullable=True),
+    sa.Column('created_at', sa.DateTime(), nullable=True),
+    sa.ForeignKeyConstraint(['quiz_answer_slot_id'], ['QuizAnswerSlot.id'], ),
+    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_index(op.f('ix_QuizAnswerOption_id'), 'QuizAnswerOption', ['id'], unique=False)
     # ### end Alembic commands ###
 
 
 def downgrade():
     # ### commands auto generated by Alembic - please adjust! ###
+    op.drop_index(op.f('ix_QuizAnswerOption_id'), table_name='QuizAnswerOption')
+    op.drop_table('QuizAnswerOption')
     op.drop_index(op.f('ix_QuizGrade_user_id'), table_name='QuizGrade')
     op.drop_index(op.f('ix_QuizGrade_quiz_id'), table_name='QuizGrade')
     op.drop_index(op.f('ix_QuizGrade_quiz_attempt_id'), table_name='QuizGrade')
@@ -184,7 +189,6 @@ def downgrade():
     op.drop_index(op.f('ix_QuizAnswerSlot_question_id'), table_name='QuizAnswerSlot')
     op.drop_index(op.f('ix_QuizAnswerSlot_id'), table_name='QuizAnswerSlot')
     op.drop_table('QuizAnswerSlot')
-    op.drop_index(op.f('ix_QuizQuestionFeedback_user_id'), table_name='QuizQuestionFeedback')
     op.drop_index(op.f('ix_QuizQuestionFeedback_question_id'), table_name='QuizQuestionFeedback')
     op.drop_index(op.f('ix_QuizQuestionFeedback_id'), table_name='QuizQuestionFeedback')
     op.drop_table('QuizQuestionFeedback')
@@ -194,10 +198,6 @@ def downgrade():
     op.drop_table('QuizAttempt')
     op.drop_index(op.f('ix_MCQOptions_id'), table_name='MCQOptions')
     op.drop_table('MCQOptions')
-    op.drop_index(op.f('ix_linkquizfile_user_file_id'), table_name='linkquizfile')
-    op.drop_index(op.f('ix_linkquizfile_quiz_id'), table_name='linkquizfile')
-    op.drop_table('linkquizfile')
-    op.drop_index(op.f('ix_QuizFeedback_user_id'), table_name='QuizFeedback')
     op.drop_index(op.f('ix_QuizFeedback_quiz_id'), table_name='QuizFeedback')
     op.drop_index(op.f('ix_QuizFeedback_id'), table_name='QuizFeedback')
     op.drop_table('QuizFeedback')
@@ -206,6 +206,9 @@ def downgrade():
     op.drop_index(op.f('ix_Question_question_text'), table_name='Question')
     op.drop_index(op.f('ix_Question_id'), table_name='Question')
     op.drop_table('Question')
+    op.drop_index(op.f('ix_LinkQuizFile_user_file_id'), table_name='LinkQuizFile')
+    op.drop_index(op.f('ix_LinkQuizFile_quiz_id'), table_name='LinkQuizFile')
+    op.drop_table('LinkQuizFile')
     op.drop_index(op.f('ix_UserFile_user_id'), table_name='UserFile')
     op.drop_index(op.f('ix_UserFile_id'), table_name='UserFile')
     op.drop_table('UserFile')

@@ -1,4 +1,4 @@
-FROM tiangolo/uvicorn-gunicorn-fastapi:python3.10-slim-2022-11-25
+FROM tiangolo/uvicorn-gunicorn-fastapi:python3.11-slim-2024-02-19
 ENV PYTHONUNBUFFERED=1
 WORKDIR /code
 # Install Poetry

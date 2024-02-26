@@ -63,7 +63,7 @@ class IGenerateQuiz(SQLModel):
     questions_type: list[QuestionTypeEnum]
     difficulty: QuestionDifficultyEnum
     user_prompt: str | None = None
-    file_ids: list[UUID] | None = None
+    user_file_ids: list[UUID] 
 
     class Config:
         {

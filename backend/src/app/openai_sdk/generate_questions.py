@@ -9,13 +9,13 @@ _: bool = load_dotenv(find_dotenv())  # read local .env file
 client: OpenAI = OpenAI()
 import json 
 
-def generate_Questions(quiz_title: str, questions_to_generate: int, question_type:list, content: str):
+def generate_questions(quiz_title: str, questions_to_generate: int, question_type:list, content: str, difficulty: str):
     """
     Grade Open Text Question
     """
     try:
         seed_prompt = f"""Create a 10 minutes 'Generative AI' Quiz that will have `4` Questions. The Questions type will include: 1. "single_select_mcq" 2. "multi_select_mcq" and "open_text_question". The Quiz will be easy and the questions generated shall follow: {MOCK_RAG_CONTENT}"""
-        user_prompt = f"""Create a 30 minutes {quiz_title} Quiz that will have {questions_to_generate} Questions. The Questions type will include: {question_type}. The Quiz will be easy and the questions generated shall follow: {content}"""
+        user_prompt = f"""Create a 30 minutes {quiz_title} Quiz of {difficulty} difficulty level that will have {questions_to_generate} Questions. The Questions type will include: {question_type}. The Quiz will be easy and the questions generated shall follow: {content}"""
         # 1. Call OpenAI API to grade the question
         response = client.chat.completions.create(
             model="gpt-3.5-turbo-1106",
@@ -45,9 +45,9 @@ def generate_Questions(quiz_title: str, questions_to_generate: int, question_typ
 # USAGE
     
 
-questions = generate_Questions("Generative AI", 4, ["single_select_mcq", "multi_select_mcq", "open_text_question"], MOCK_RAG_CONTENT)
+# questions = generate_questions("Generative AI", 4, ["single_select_mcq", "multi_select_mcq", "open_text_question"], MOCK_RAG_CONTENT)
 
-print(questions)
+# print(questions)
 
 # OUTPUT
     

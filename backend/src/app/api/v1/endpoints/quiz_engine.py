@@ -9,10 +9,10 @@ from app.api.deps import get_db
 from app.core.auth import clerk_auth
 from app.schemas.question_engine_schema import IBatchQuestionsCreate
 from app.schemas.quiz_engine_schema import (IQuizCreate, IQuizUpdate, IQuizRead, IPaginatedQuizList, IGenerateQuiz, IQuizRemove)
-from app.core.rag_pipeline import generate_questions_content_with_rag, generate_questions_with_ai
 
-# Mock Data
-from app.utils.mock.generated_questions import mock_generated_questions
+from app.core.quiz_creation.rag_quiz_content import retrieve_from_pinecone
+from app.openai_sdk.generate_questions import generate_questions
+
 
 router = APIRouter()
 
@@ -134,42 +134,69 @@ async def generate_quiz_rag_ai_pipeline(
     """
     try:
         # 0. Create Quiz in DB to get quiz_id
-        quiz_obj = IQuizCreate(title=generate_quiz_data.title, user_id=user_id, time_limit=generate_quiz_data.time_limit, user_file_ids=generate_quiz_data.file_ids)
+        quiz_obj = IQuizCreate(title=generate_quiz_data.title, user_id=user_id, time_limit=generate_quiz_data.time_limit, user_file_ids=generate_quiz_data.user_file_ids)
         quiz_in_db = await crud.quiz_engine.create_quiz(quiz_obj=quiz_obj, db_session=db_session)
 
-        # 1.1 RAG PIPELINE TO GET QUESTIONS CONTENT
-        questions_content = await generate_questions_content_with_rag(
-            user_prompt=generate_quiz_data.user_prompt,
-            file_ids=generate_quiz_data.file_ids,
-            db_session=db_session  # Pass the DB session if needed for file retrieval
-        )
 
+        # 1.1 RAG PIPELINE TO GET QUESTIONS CONTENT
+        acc_retrieve_from_pinecone: str = ""
+        
+        for file_id in generate_quiz_data.user_file_ids:
+            prep_filter = {"file_id": str(file_id), "user_id": user_id}
+            call_retrieve_from_pinecone = await retrieve_from_pinecone(query=generate_quiz_data.user_prompt, filter=prep_filter)
+            print("\n---- call_retrieve_from_pinecone -----\n", call_retrieve_from_pinecone, "\n--------\n")
+
+            # Directly extract and concatenate page_content from the response
+            for element in call_retrieve_from_pinecone:
+                # Assuming each element is a tuple containing a Document object and a similarity score
+                if isinstance(element, tuple) and len(element) > 1:
+                    document, _ = element  # Unpack the tuple
+                    page_content = document.page_content  # Extract page_content from the Document object
+                    # Concatenate the page_content to the existing string with a separator
+                    acc_retrieve_from_pinecone += (" " + page_content if acc_retrieve_from_pinecone else page_content)
+                else:
+                    print("Unexpected item structure:", element)
+
+                # After iterating through all file_ids, check if any content was retrieved
+        if not acc_retrieve_from_pinecone:
+            acc_retrieve_from_pinecone = "Generate Quiz from instructions"
+
+
+        print("\n---- acc_retrieve_from_pinecone -----\n", acc_retrieve_from_pinecone, "\n--------\n")
+        
         # 1.2 AI PIPELINE TO GENERATE QUESTIONS
-        generated_questions = await generate_questions_with_ai(
-            questions_content=questions_content
-        )
+        raq_gen_questions = generate_questions(quiz_title=generate_quiz_data.title, 
+                                       questions_to_generate=generate_quiz_data.total_questions_to_generate, 
+                                       question_type=generate_quiz_data.questions_type,
+                                       content=acc_retrieve_from_pinecone,
+                                       difficulty=generate_quiz_data.difficulty)
+
+        print("\n---- raq_gen_questions -----\n", raq_gen_questions, "\n--------\n")
+
 
         # 2. Add Questions to Quiz
         # 2.1 Sanitize and add Questions in Database
-        
-        # - add quiz_id & user_id to each question
+        generated_questions = raq_gen_questions['questions']
+        # # - add quiz_id & user_id to each question
         for question in generated_questions:
             question["quiz_id"] = quiz_in_db.id
             question["user_id"] = quiz_in_db.user_id
 
-        # - sanitize and add questions to database
+
+        # # - sanitize and add questions to database
         sanitized_questions_in = IBatchQuestionsCreate(questions=generated_questions)
+        print("\n---- sanitized_questions_in -----\n", sanitized_questions_in, "\n--------\n")
         await crud.question_engine.create_questions_batch(questions_in=sanitized_questions_in, db_session=db_session)
 
-        # - count questions_added, total_points, and time_limit (if returned from GPT)
+        # # - count questions_added, total_points, and time_limit (if returned from GPT)
         count_questions_added = len(generated_questions)
         total_points = sum([question["points"] for question in generated_questions])
         
         time_limit_in_minutes = sum([question["time_limit"] for question in generated_questions])
-        # Convert total minutes into a timedelta object
+        # # Convert total minutes into a timedelta object
         time_limit = timedelta(minutes=time_limit_in_minutes)
 
-        # 3. Update Quiz Fields and return it
+        # # 3. Update Quiz Fields and return it
         quiz_update_obj = IQuizUpdate(total_questions_count=count_questions_added, total_points=total_points, time_limit=time_limit)
         quiz_updated = await crud.quiz_engine.update_quiz(user_id=user_id, quiz_id=quiz_in_db.id, quiz_obj=quiz_update_obj, db_session=db_session)
         return quiz_updated

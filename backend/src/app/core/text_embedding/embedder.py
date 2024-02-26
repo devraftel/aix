@@ -1,49 +1,54 @@
+from dotenv import load_dotenv, find_dotenv
 import os
-from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException
-from langchain_community.vectorstores import Pinecone
-from langchain.embeddings import OpenAIEmbeddings
-from openai import APIError
-from pinecone.exceptions import PineconeException
+
+from fastapi import HTTPException
+from langchain_pinecone import PineconeVectorStore
+from langchain_openai import OpenAIEmbeddings
+
+from app.core.document_processing.splitter import RecursiveCharacterTextSplitter
 
 
 # Load environment variables
-load_dotenv()
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
-PINECONE_INDEX_NAME = os.getenv("PINECONE_INDEX_NAME")
+_: bool = load_dotenv(find_dotenv())  # read local .env file
 
-app = FastAPI()  # Create a FastAPI instance
-
-
-async def generate_embedding(text):
-    """Embeds the given text using OpenAI embeddings."""
-    try:
-        embedder = OpenAIEmbeddings(openai_api_key=OPENAI_API_KEY)
-        text_embedding = embedder.embed_query(text)
-        return text_embedding
-    except APIError as e:
-        print(f"OpenAI Error: {e}")
-        raise HTTPException(status_code=500, detail="Error generating embedding from OpenAI")
+OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
+PINECONE_API_KEY = os.environ.get("PINECONE_API_KEY")
+PINECONE_INDEX = os.environ.get("PINECONE_INDEX")
 
 
-async def store_in_pinecone(embedding, text, metadata={}):
+async def store_in_pinecone(text, metadata={}):
     """Stores an embedding in Pinecone."""
     try:
-        pinecone_store = Pinecone.from_existing_index(PINECONE_API_KEY, PINECONE_INDEX_NAME)
-        pinecone_id = await pinecone_store.add_embedding(embedding, text, metadata)
-        return embedding, pinecone_id
-    except PineconeException as e:
-        print(f"Pinecone Error: {e}")
-        raise HTTPException(status_code=500, detail="Error storing data in Pinecone")
+        print("\nStoring in Pinecone\n")
+        text_splitter = RecursiveCharacterTextSplitter(
+            chunk_size=1000, chunk_overlap=0)
+        print("\nText Splitter:\n", text_splitter)
+
+        doc_to_split = text_splitter.create_documents(texts=[text])
+        print("\n -------- \n  doc_to_split  \n -------- \n",
+              doc_to_split, "\n -------- \n")
+        all_splits = text_splitter.split_documents(
+            documents=doc_to_split, metadata_extra=metadata)
+
+        print("\n -------- \n NUMBER OF SPLITS \n -------- \n",
+              all_splits, "\n -------- \n")
+
+        vectorstore = PineconeVectorStore.from_documents(
+            documents=all_splits, embedding=OpenAIEmbeddings(), index_name=PINECONE_INDEX
+        )
+
+        print("\nPinecone store:\n", vectorstore)
+
+        return vectorstore
     except Exception as e:
         print(f"Unexpected Error: {e}")
-        raise HTTPException(status_code=500, detail="An unexpected error occurred")
+        raise HTTPException(
+            status_code=500, detail="An unexpected error occurred when storing data in Pinecone")
 
 
-async def receive_and_process_text(text):
-    """Receives text input, generates an embedding, and stores it in Pinecone."""
-    embedding = await generate_embedding(text)
-    if embedding:
-        metadata = {"original_text": text}
-        await store_in_pinecone(embedding, text, metadata)
+async def receive_and_process_text(file_id: str, user_id: str, file_name: str, text):
+
+    print("Received text:", text)
+    metadata = {"file_id": file_id, "user_id": user_id, "file_name": file_name}
+
+    await store_in_pinecone(text, metadata)
