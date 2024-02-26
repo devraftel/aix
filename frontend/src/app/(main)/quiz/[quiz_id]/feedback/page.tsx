@@ -123,6 +123,11 @@ const QuizFeedback = async ({ params }: QuizFeedback) => {
 																(option) => option.is_correct
 															)?.option_id || ''
 														}
+														selected_value={
+															question.mcq_options.find(
+																(option) => option.selected_option
+															)?.option_id || ''
+														}
 													/>
 												) : question.question_type === 'multi_select_mcq' ? (
 													<MultiSelect
@@ -134,6 +139,9 @@ const QuizFeedback = async ({ params }: QuizFeedback) => {
 														})}
 														correct_values={question.mcq_options
 															.filter((option) => option.is_correct)
+															.map((option) => option.option_id)}
+														selected_values={question.mcq_options
+															.filter((option) => option.selected_option)
 															.map((option) => option.option_id)}
 													/>
 												) : (
@@ -201,26 +209,36 @@ type Option = {
 type SingleSelectProps = {
 	options: Option[];
 	correct_value: string;
+	selected_value: string;
 };
 
 type MultiSelectProps = {
 	options: Option[];
 	correct_values: string[];
+	selected_values: string[];
 };
 
-const SingleSelect = ({ options, correct_value }: SingleSelectProps) => {
+const SingleSelect = ({
+	options,
+	correct_value,
+	selected_value,
+}: SingleSelectProps) => {
 	{
 		return (
 			<RadioGroup
-				defaultValue={correct_value}
+				defaultValue={selected_value}
 				className='flex flex-col space-y-1 w-11/12 mx-auto'
 			>
 				{options.map((option) => (
 					<div
 						key={option.id}
 						className={cn(
-							`flex items-center space-x-3 font-semibold space-y-0 text-gray-950 `
-							// option.id === correct_value ? 'text-green-950' : 'text-red-950'
+							`flex items-center space-x-3 font-semibold space-y-0`,
+							option.id === selected_value
+								? option.id === correct_value
+									? 'text-green-950'
+									: 'text-red-950'
+								: 'text-gray-950'
 						)}
 					>
 						<RadioGroupItem
@@ -237,15 +255,23 @@ const SingleSelect = ({ options, correct_value }: SingleSelectProps) => {
 	}
 };
 
-const MultiSelect = ({ options, correct_values }: MultiSelectProps) => {
+const MultiSelect = ({
+	options,
+	correct_values,
+	selected_values,
+}: MultiSelectProps) => {
 	return (
 		<div className='flex flex-col space-y-1 w-11/12 mx-auto'>
 			{options.map((item) => (
 				<div
 					key={item.id}
 					className={cn(
-						`flex items-center space-x-3 font-semibold space-y-0 text-gray-950 `
-						// correct_values.includes(item.id) ? 'text-green-950' : 'text-red-950'
+						`flex items-center space-x-3 font-semibold space-y-0`,
+						selected_values.includes(item.id)
+							? correct_values.includes(item.id)
+								? 'text-green-950'
+								: 'text-red-950'
+							: 'text-gray-950'
 					)}
 				>
 					<Checkbox

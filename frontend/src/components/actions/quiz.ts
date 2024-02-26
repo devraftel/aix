@@ -125,14 +125,12 @@ export async function getQuizList(): Promise<{
 
 	const json = await response.json();
 
-	console.log('GET /quiz success', json);
-
 	json.data = json.data.map((quiz: QuizGenerateReponse) => {
 		const timeLimit = convertTime(quiz.time_limit);
-		console.log('Time Limit', timeLimit);
 		quiz.time_limit = timeLimit;
 		return quiz;
 	});
+	console.log('GET /quiz success', json);
 
 	return { data: json };
 }
@@ -338,9 +336,23 @@ export async function submitAnswer({
 	return { data: json };
 }
 
+export interface QuizFinishResponse {
+	quiz_id: string;
+	time_limit: string;
+	time_start: string;
+	total_points: number;
+	quiz_feedback_id: string | null;
+	id: string;
+	updated_at: string;
+	user_id: string;
+	time_finish: string;
+	attempt_score: number;
+	created_at: string;
+}
+
 export async function submitQuiz(
 	attemptId: string
-): Promise<{ data?: any; error?: string }> {
+): Promise<{ data?: QuizFinishResponse; error?: string }> {
 	if (!attemptId) {
 		return { error: 'Attempt ID is required to submit a quiz.' };
 	}
@@ -433,12 +445,16 @@ export const quizFeedback = async (
 
 	const baseUrl = getBaseURL();
 
-	const response = await fetch(`${baseUrl}/quiz-attempt/${quizId}/graded`, {
-		method: 'GET',
-		headers: {
-			Authorization: `Bearer ${sessionId}`,
-		},
-	});
+	const response = await fetch(
+		// `${baseUrl}/quiz-attempt/${quizId}/graded`,
+		`${baseUrl}/quiz-attempt/user/${quizId}`,
+		{
+			method: 'GET',
+			headers: {
+				Authorization: `Bearer ${sessionId}`,
+			},
+		}
+	);
 
 	if (!response.ok) {
 		console.log(

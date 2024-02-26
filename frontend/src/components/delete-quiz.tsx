@@ -20,7 +20,6 @@ export function DeleteQuiz() {
 	const searchparams = useSearchParams();
 	const quizId = searchparams.get('delete');
 	const router = useRouter();
-	console.log('Search Params', quizId);
 
 	const handleDelete = async () => {
 		if (!quizId) {

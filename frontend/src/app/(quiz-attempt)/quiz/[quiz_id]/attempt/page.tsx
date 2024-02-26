@@ -38,14 +38,31 @@ export default function QuizAttemp({ params }: QuizAttempProps) {
 		queryFn: () => attempt(quiz_id),
 	});
 
-	const handleQuestionSubmit = useCallback(() => {
+	const handleQuestionSubmit = useCallback(async () => {
 		if (currentQuestionIndex < quizAttempt?.questions.length! - 1) {
 			setCurrentQuestionIndex(currentQuestionIndex + 1);
 		} else {
 			toast('Quiz Completed', { description: 'Quiz has been submitted' });
-			submitQuiz(quizAttempt?.id!);
-			reset();
-			router.push(`/quiz/${quizAttempt?.id}/feedback`);
+			const res = await submitQuiz(quizAttempt?.id!);
+
+			if (res.error) {
+				toast('Error Finishing quiz', { description: res.error });
+				return;
+			}
+
+			if (res?.data) {
+				const { data } = res;
+				const stringifiedData = Object.fromEntries(
+					Object.entries(data).map(([key, value]) => [key, String(value)])
+				);
+				const params = new URLSearchParams(stringifiedData);
+
+				reset();
+				// Redirect the user to result route after submitting the quiz
+				router.push(`/quiz/${quizAttempt?.id}/result?${params}`);
+			}
+
+			// router.push(`/quiz/${quizAttempt?.id}/feedback`);
 		}
 	}, [
 		currentQuestionIndex,
