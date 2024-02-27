@@ -1,4 +1,4 @@
-import { attemptQuiz, deleteQuiz, submitAnswer } from './quiz';
+import { attemptQuiz, deleteQuiz, saveAnswer } from './quiz';
 
 export const attempt = async (quizId: string) => {
 	const res = await attemptQuiz(quizId);
@@ -12,7 +12,7 @@ export const deleteQ = async (quizId: string) => {
 	return res;
 };
 
-export const submitA = async ({
+export const saveQuizAnswer = async ({
 	attemptId,
 	questionId,
 	questionType,
@@ -25,7 +25,7 @@ export const submitA = async ({
 	answerText?: string;
 	selectedOptions?: string[];
 }) => {
-	const res = await submitAnswer({
+	const res = await saveAnswer({
 		attemptId,
 		questionId,
 		questionType,

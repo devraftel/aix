@@ -6,7 +6,6 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import { QuestionButton } from './question-button';
-import { SourceCard } from './source-card';
 
 interface QuizFeedback {
 	params: {
@@ -67,10 +66,10 @@ const QuizFeedback = async ({ params }: QuizFeedback) => {
 						</p>
 					</div>
 					<div>
-						<Badge className='text-aix-50'>
-							<p>
+						<Badge>
+							<p className='text-aix-100'>
 								Score:{' '}
-								<span>
+								<span className='text-aix-100'>
 									{feedback?.attempt_score}/{feedback?.total_points}
 								</span>
 							</p>
@@ -170,7 +169,7 @@ const QuizFeedback = async ({ params }: QuizFeedback) => {
 													question.feedback_text /* This is the feedback for the question */
 												}
 											</p>
-											<div className='flex flex-col space-y-2 md:space-y-4'>
+											{/* <div className='flex flex-col space-y-2 md:space-y-4'>
 												<h2 className='font-roboto text-xl font-semibold'>
 													Learning Sources
 												</h2>
@@ -180,7 +179,7 @@ const QuizFeedback = async ({ params }: QuizFeedback) => {
 														link='https://www.freecodecamp.org/learn/scientific-computing-with-python/python-for-everybody/'
 													/>
 												</div>
-											</div>
+											</div> */}
 										</div>
 
 										<div>

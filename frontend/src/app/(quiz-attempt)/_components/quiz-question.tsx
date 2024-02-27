@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
-import { submitA } from '@/components/actions/attempt';
+import { saveQuizAnswer } from '@/components/actions/attempt';
 import { QuizProgress } from './quiz-progress';
 
 import { Button } from '@/components/ui/button';
@@ -56,6 +56,7 @@ export const QuizMultiselectQuestion = ({
 			z.string({ required_error: 'You need to select at least one option.' })
 		),
 	});
+
 	const form = useForm<z.infer<typeof FormSchema>>({
 		resolver: zodResolver(FormSchema),
 		defaultValues: {
@@ -66,7 +67,8 @@ export const QuizMultiselectQuestion = ({
 	async function onSubmit(data: z.infer<typeof FormSchema>) {
 		try {
 			setIsLoading(true);
-			const res = await submitA({
+
+			const res = await saveQuizAnswer({
 				attemptId: attempt_id,
 				questionType: question_type,
 				selectedOptions: data.selectedOptions,
@@ -79,8 +81,10 @@ export const QuizMultiselectQuestion = ({
 			}
 
 			console.log('Answer submitted:', res.data);
-			form.reset();
+
 			handleSubmit();
+
+			form.reset();
 		} catch (error) {
 			console.error('Error submitting answer:', error);
 		} finally {
@@ -203,7 +207,7 @@ export const QuizOpentextQuestion = ({
 	async function onSubmit(data: z.infer<typeof FormSchema>) {
 		try {
 			setIsLoading(true);
-			const res = await submitA({
+			const res = await saveQuizAnswer({
 				attemptId: attempt_id,
 				questionType: question_type,
 				answerText: data.freeformAnswer,
@@ -216,7 +220,7 @@ export const QuizOpentextQuestion = ({
 			}
 
 			console.log('Answer submitted:', res.data);
-			form.resetField('freeformAnswer');
+			form.setValue('freeformAnswer', '');
 			form.reset();
 			handleSubmit();
 		} catch (error) {
@@ -320,6 +324,7 @@ export const QuizSingleSelectQuestion = ({
 			}
 		),
 	});
+
 	const form = useForm<z.infer<typeof FormSchema>>({
 		resolver: zodResolver(FormSchema),
 	});
@@ -327,7 +332,7 @@ export const QuizSingleSelectQuestion = ({
 	async function onSubmit(data: z.infer<typeof FormSchema>) {
 		try {
 			setIsLoading(true);
-			const res = await submitA({
+			const res = await saveQuizAnswer({
 				attemptId: attempt_id,
 				questionType: question_type,
 				selectedOptions: [data.selectedOption],

@@ -4,11 +4,11 @@ import { X } from 'lucide-react';
 import Link from 'next/link';
 
 import { Button } from '@/components/ui/button';
-import { useQuizAttemptStore } from '@/store/quiz-attempt-store';
+import { useQuizStore } from '@/store/quiz-store';
 
 export const QuizAttemptTopBar = () => {
 	const user = useUser();
-	const { quizAttempt } = useQuizAttemptStore();
+	const { activeQuiz } = useQuizStore();
 
 	return (
 		<header className='flex items-center justify-center bg-gray-200 w-full px-4 font-roboto '>
@@ -21,7 +21,7 @@ export const QuizAttemptTopBar = () => {
 
 			{/* Quiz Title */}
 			<h1 className='flex-1 font-bold text-left md:text-center text-sm lg:text-base'>
-				Quiz: {quizAttempt?.quiz_title}
+				Quiz: {activeQuiz?.quiz_title}
 			</h1>
 
 			{/* Exit Button */}

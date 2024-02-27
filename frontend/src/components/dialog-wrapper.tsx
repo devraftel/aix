@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 
 import { useDeleteQuizStore } from '@/store/delete-quiz';
-import { useQuizStartStore } from '@/store/quiz-start-store';
+import { useQuizDialogStore } from '@/store/quiz-dialog-store';
 
 import { deleteQ } from './actions/attempt';
 import { DialogConfirm } from './ui/dialog-confirm';
@@ -14,7 +14,8 @@ import { QUERY_KEY } from '@/lib/constants';
 import { useFileDeleteStore } from '@/store/filedeletestore';
 
 export const DialogWrapper = () => {
-	const { isQuizStartOpen, setIsQuizStartOpen, quizId } = useQuizStartStore();
+	const { isQuizDialogOpen, setQuizDialogStatus, currentQuizId } =
+		useQuizDialogStore();
 	const { isDeleteQuizOpen, setIsDeleteQuizOpen } = useDeleteQuizStore();
 	const { isFileDeleteOpen, setIsFileDeleteOpen, fileId } =
 		useFileDeleteStore();
@@ -32,8 +33,8 @@ export const DialogWrapper = () => {
 	const id = pathname.split('/').pop();
 
 	const handleAttempt = () => {
-		router.push(`/quiz/${quizId || id}/attempt`);
-		setIsQuizStartOpen(!isQuizStartOpen);
+		router.push(`/quiz/${currentQuizId || id}/attempt`);
+		setQuizDialogStatus(!isQuizDialogOpen);
 	};
 
 	const handleQuizDelete = async () => {
@@ -100,15 +101,15 @@ export const DialogWrapper = () => {
 	return (
 		<>
 			<DialogConfirm
-				open={isQuizStartOpen}
-				onOpenChange={setIsQuizStartOpen}
+				open={isQuizDialogOpen}
+				onOpenChange={setQuizDialogStatus}
 				title='Quiz Initialization'
 				description='You are about to start the quiz. Ensure you are ready as the timer will start immediately.'
 				cancelButtonText='Cancel'
 				confirmButtonText='Start'
 				isLoading={false}
 				onCancel={() => {
-					setIsQuizStartOpen(!isQuizStartOpen);
+					setQuizDialogStatus(!isQuizDialogOpen);
 				}}
 				onConfirm={handleAttempt}
 			/>

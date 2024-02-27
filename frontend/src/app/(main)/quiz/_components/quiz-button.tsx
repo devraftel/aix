@@ -1,15 +1,15 @@
 'use client';
 import { Button } from '@/components/ui/button';
-import { useQuizStartStore } from '@/store/quiz-start-store';
+import { useQuizDialogStore } from '@/store/quiz-dialog-store';
 
 export const QuizButton = () => {
-	const { isQuizStartOpen, setIsQuizStartOpen } = useQuizStartStore();
+	const { isQuizDialogOpen, setQuizDialogStatus } = useQuizDialogStore();
 
 	return (
 		<>
 			<Button
 				onClick={() => {
-					setIsQuizStartOpen(!isQuizStartOpen);
+					setQuizDialogStatus(!isQuizDialogOpen);
 				}}
 				className='w-full'
 			>

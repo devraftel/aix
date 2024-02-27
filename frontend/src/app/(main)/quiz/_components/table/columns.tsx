@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { formatSeconds } from '@/lib/utils';
 import { useDeleteQuizStore } from '@/store/delete-quiz';
-import { useQuizStartStore } from '@/store/quiz-start-store';
+import { useQuizDialogStore } from '@/store/quiz-dialog-store';
 import { ColumnDef, Row } from '@tanstack/react-table';
 import { MoreHorizontal, Settings } from 'lucide-react';
 import Link from 'next/link';
@@ -27,8 +27,8 @@ export type QuizList = {
 
 const ActionCell = ({ row }: { row: Row<QuizList> }) => {
 	const quiz = row.original;
-	const { isQuizStartOpen, setIsQuizStartOpen, setQuizId } =
-		useQuizStartStore();
+	const { isQuizDialogOpen, setQuizDialogStatus, setQuizId } =
+		useQuizDialogStore();
 	const { isDeleteQuizOpen, setIsDeleteQuizOpen } = useDeleteQuizStore();
 	const router = useRouter();
 	return (
@@ -56,7 +56,7 @@ const ActionCell = ({ row }: { row: Row<QuizList> }) => {
 				<DropdownMenuItem
 					onClick={() => {
 						setQuizId(quiz.id);
-						setIsQuizStartOpen(!isQuizStartOpen);
+						setQuizDialogStatus(!isQuizDialogOpen);
 					}}
 				>
 					Attempt Quiz
