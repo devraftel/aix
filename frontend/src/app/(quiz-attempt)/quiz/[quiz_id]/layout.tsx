@@ -1,3 +1,5 @@
+import { QuizAttemptTopBar } from '@/components/layout/quiz-attempt-topbar';
+
 export default function QuizAttemptLayout({
 	children,
 	modal,
@@ -7,6 +9,7 @@ export default function QuizAttemptLayout({
 }) {
 	return (
 		<>
+			<QuizAttemptTopBar />
 			{children}
 			{modal}
 		</>

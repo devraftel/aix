@@ -1,10 +1,10 @@
 import MaxWidthWrapper from '@/components/max-width-wrapper';
-import MobileNav from '@/components/mobile-nav';
+import MobileNav from '@/components/layout/mobile-nav';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { auth, UserButton } from '@clerk/nextjs';
 import { ArrowRight } from 'lucide-react';
 import Link from 'next/link';
-import { Logo } from './logo';
+import { Logo } from '../logo';
 
 import { SignedOut, SignInButton, SignUpButton } from '@clerk/nextjs';
 

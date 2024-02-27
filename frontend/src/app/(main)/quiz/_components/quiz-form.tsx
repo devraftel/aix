@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form';
 
 import { UserFileResponse } from '@/components/actions/document';
 import { fetchDocuments } from '@/components/actions/fetch-document';
-import { QuizGenerate, createQuiz } from '@/components/actions/quiz';
+import { generateQuiz } from '@/components/actions/quiz';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -22,7 +22,9 @@ import { MultiSelect, OptionType } from '@/components/ui/multiselect';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
 import { QUERY_KEY } from '@/lib/constants';
+import { convertMinutesTimeDelta } from '@/lib/utils';
 import { useFileUploadStore } from '@/store/fileupload-store';
+import { Generate } from '@/type/quiz';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
@@ -79,9 +81,11 @@ export function QuizeForm({ initialDocument }: QuizGenerateFormProps) {
 
 	async function onSubmit(data: QuizGenerateRequest) {
 		try {
-			const payload: QuizGenerate = {
+			const timeDelta = convertMinutesTimeDelta(data?.time_limit);
+
+			const payload: Generate = {
 				title: data.title,
-				time_limit: `PT${data.time_limit}M`,
+				time_limit: timeDelta,
 				total_questions_to_generate: Number(data.total_questions_to_generate),
 				questions_type: data.questions_type,
 				difficulty: data.difficulty,
@@ -89,7 +93,7 @@ export function QuizeForm({ initialDocument }: QuizGenerateFormProps) {
 				user_file_ids: data.file_ids,
 			};
 
-			const res = await createQuiz(payload);
+			const res = await generateQuiz(payload);
 
 			if (res.error) {
 				toast('Failed to generate quiz', {

@@ -1,6 +1,6 @@
 import { fetchDocuments } from '@/components/actions/fetch-document';
 import MaxWidthWrapper from '@/components/max-width-wrapper';
-import { DrawerDemo } from '../_components/fileupload';
+import { DrawerFileUpload } from '../../../../components/drawer-fileupload';
 import { QuizeForm } from '../_components/quiz-form';
 
 export default async function QuizGenerate() {
@@ -12,7 +12,7 @@ export default async function QuizGenerate() {
 				<div className='bg-aix-frosted border border-aix-200 drop-shadow-sm px-[3rem] py-[2rem] rounded-3xl'>
 					<QuizeForm initialDocument={data} />
 				</div>
-				<DrawerDemo />
+				<DrawerFileUpload />
 			</MaxWidthWrapper>
 		</>
 	);

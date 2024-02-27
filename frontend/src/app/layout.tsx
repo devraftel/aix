@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import { Open_Sans, Roboto } from 'next/font/google';
 import './globals.css';
 
-import { QueryProvider } from '@/components/query-provider';
+import { QueryProvider } from '@/providers/query-provider';
 import { cn } from '@/lib/utils';
 import { ClerkProvider } from '@clerk/nextjs';
 

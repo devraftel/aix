@@ -1,9 +1,10 @@
-import { buttonVariants } from '@/components/ui/button';
-import { Card, CardHeader, CardTitle } from '@/components/ui/card';
-import { cn } from '@/lib/utils';
 import { Link as LinkIcon } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+
+import { buttonVariants } from '@/components/ui/button';
+import { Card, CardHeader, CardTitle } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
 
 interface SourceCardProps {
 	link: string;

@@ -8,6 +8,7 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { formatSeconds } from '@/lib/utils';
 import { useDeleteQuizStore } from '@/store/delete-quiz';
 import { useQuizStartStore } from '@/store/quiz-start-store';
 import { ColumnDef, Row } from '@tanstack/react-table';
@@ -122,9 +123,12 @@ export const columns: ColumnDef<QuizList>[] = [
 	{
 		accessorKey: 'time_limit',
 		header: () => <div className='text-left'>Time Limit</div>,
-		cell: ({ row }) => (
-			<div className='capitalize'>{row.getValue('time_limit')}</div>
-		),
+		cell: ({ row }) => {
+			const time = row.getValue('time_limit') as string;
+			const _time = formatSeconds(time);
+
+			return <div className='capitalize'>{_time}</div>;
+		},
 	},
 	{
 		id: 'actions',

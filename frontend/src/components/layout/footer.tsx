@@ -1,7 +1,7 @@
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
-import { Logo } from './logo';
-import { buttonVariants } from './ui/button';
+import { Logo } from '../logo';
+import { buttonVariants } from '../ui/button';
 
 export const Footer = () => {
 	return (

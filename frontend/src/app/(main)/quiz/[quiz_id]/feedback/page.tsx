@@ -67,7 +67,7 @@ const QuizFeedback = async ({ params }: QuizFeedback) => {
 						</p>
 					</div>
 					<div>
-						<Badge>
+						<Badge className='text-aix-50'>
 							<p>
 								Score:{' '}
 								<span>

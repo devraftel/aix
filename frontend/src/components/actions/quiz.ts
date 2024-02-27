@@ -1,33 +1,18 @@
 'use server';
-import { DifficultyLevel } from '@/app/(main)/quiz/_components/utils';
-import { getBaseURL } from '@/lib/utils';
-import dayjs from 'dayjs';
+import { convertISODurationToSeconds, getBaseURL } from '@/lib/utils';
 
+import {
+	Attempt,
+	FinishResponse,
+	Generate,
+	GenerateReponse,
+} from '@/type/quiz';
 import { auth } from '@clerk/nextjs';
 import { revalidateTag } from 'next/cache';
 
-export interface QuizGenerate {
-	title: string;
-	time_limit: string;
-	total_questions_to_generate: number;
-	questions_type: string[];
-	difficulty: DifficultyLevel;
-	user_prompt: string;
-	user_file_ids: string[];
-}
-
-export interface QuizGenerateReponse {
-	id: string;
-	title: string;
-	has_user_attempted: boolean;
-	time_limit: string;
-	total_points: number;
-	total_questions_count: number;
-}
-
-export async function createQuiz(data: QuizGenerate): Promise<{
+export async function generateQuiz(data: Generate): Promise<{
 	error?: string;
-	data?: QuizGenerateReponse;
+	data?: GenerateReponse;
 }> {
 	console.log('Creating quiz', data);
 
@@ -80,7 +65,7 @@ export async function getQuizList(): Promise<{
 		total: number;
 		next_page: string;
 		prev_page: string;
-		data: QuizGenerateReponse[];
+		data: GenerateReponse[];
 	};
 }> {
 	const { userId, sessionId } = auth();
@@ -125,8 +110,9 @@ export async function getQuizList(): Promise<{
 
 	const json = await response.json();
 
-	json.data = json.data.map((quiz: QuizGenerateReponse) => {
-		const timeLimit = convertTime(quiz.time_limit);
+	json.data = json.data.map((quiz: GenerateReponse) => {
+		const timeLimit = convertISODurationToSeconds(quiz.time_limit).toString();
+
 		quiz.time_limit = timeLimit;
 		return quiz;
 	});
@@ -137,7 +123,7 @@ export async function getQuizList(): Promise<{
 
 export async function getQuiz(quizId: string): Promise<{
 	error?: string;
-	data?: QuizGenerateReponse;
+	data?: GenerateReponse;
 }> {
 	if (!quizId) {
 		return { error: 'Quiz ID is required to get a quiz.' };
@@ -164,65 +150,20 @@ export async function getQuiz(quizId: string): Promise<{
 		};
 	}
 
-	const json = (await response.json()) as QuizGenerateReponse;
+	const json = (await response.json()) as GenerateReponse;
 
-	console.log('GET /quiz/:id success', json);
-
-	const timeLimit = convertTime(json.time_limit);
+	const timeLimit = convertISODurationToSeconds(json.time_limit).toString();
 
 	json.time_limit = timeLimit;
+
+	console.log('GET /quiz/:id success', json);
 
 	return { data: json };
 }
 
-const convertTime = (time: string) => {
-	let totalSeconds = 0;
-	const hoursMatch = time.match(/(\d+)H/);
-	const minutesMatch = time.match(/(\d+)M/);
-	const secondsMatch = time.match(/(\d+)S/);
-
-	if (hoursMatch) {
-		totalSeconds += Number(hoursMatch[1]) * 3600;
-	}
-
-	if (minutesMatch) {
-		totalSeconds += Number(minutesMatch[1]) * 60;
-	}
-
-	if (secondsMatch) {
-		totalSeconds += Number(secondsMatch[1]);
-	}
-
-	const date = dayjs.unix(totalSeconds);
-	return `${date.format('HH:mm:ss')}`;
-};
-
-interface QuizAttempt {
-	id: string;
-	user_id: string;
-	quiz_id: string;
-	quiz_title: string;
-	time_limit: string;
-	time_start: string;
-	total_points: number;
-	questions: {
-		id: string;
-		question_text: string;
-		question_type:
-			| 'single_select_mcq'
-			| 'multi_select_mcq'
-			| 'open_text_question';
-		points: number;
-		mcq_options: {
-			id: string;
-			option_text: string;
-		}[];
-	}[];
-}
-
 export async function attemptQuiz(quizId: string): Promise<{
 	error?: string;
-	data?: QuizAttempt;
+	data?: Attempt;
 }> {
 	if (!quizId) {
 		return { error: 'Quiz ID is required to attempt a quiz.' };
@@ -255,7 +196,7 @@ export async function attemptQuiz(quizId: string): Promise<{
 
 	const json = await response.json();
 
-	const time_limit = convertTime(json.time_limit);
+	const time_limit = convertISODurationToSeconds(json.time_limit).toString();
 
 	json.time_limit = time_limit;
 
@@ -336,23 +277,9 @@ export async function submitAnswer({
 	return { data: json };
 }
 
-export interface QuizFinishResponse {
-	quiz_id: string;
-	time_limit: string;
-	time_start: string;
-	total_points: number;
-	quiz_feedback_id: string | null;
-	id: string;
-	updated_at: string;
-	user_id: string;
-	time_finish: string;
-	attempt_score: number;
-	created_at: string;
-}
-
 export async function submitQuiz(
 	attemptId: string
-): Promise<{ data?: QuizFinishResponse; error?: string }> {
+): Promise<{ data?: FinishResponse; error?: string }> {
 	if (!attemptId) {
 		return { error: 'Attempt ID is required to submit a quiz.' };
 	}
@@ -393,6 +320,7 @@ export async function deleteQuiz(quizId: string): Promise<{ error?: string }> {
 	}
 
 	const { userId, sessionId } = auth();
+
 	if (!userId) {
 		return { error: 'User is not logged in' };
 	}
@@ -470,110 +398,4 @@ export const quizFeedback = async (
 	console.log('GET /quiz/:id/feedback success', json);
 
 	return { data: json };
-};
-
-const dummyfeedback = {
-	time_start: '2024-02-23T09:22:13.113516',
-	total_points: 4,
-	time_finish: '2024-02-23T09:27:52.873690',
-	time_limit: 'PT300S',
-	attempt_score: 2.4,
-	attempt_id: '018dd545-b9fc-7f13-ab6d-d6d07716dba4',
-	quiz_id: '018dd545-5a90-786d-9991-7f5414eeecdc',
-	attempted_questions: [
-		{
-			question_id: '018dd527-4843-7226-a76e-ef3fe1773a08',
-			question_text: 'What is Generative AI?',
-			question_type: 'single_select_mcq',
-			points: 1,
-			points_awarded: 1.0,
-			feedback_text:
-				'Great job! The selected option correctly defines Generative AI as a type of machine learning that generates new content. Keep up the good work!',
-			answer_text: null,
-			mcq_options: [
-				{
-					option_id: '018dd527-4842-74ea-a2a9-0e661bd165a5',
-					option_text: 'A type of machine learning that detects anomalies',
-					is_correct: false,
-					selected_option: false,
-				},
-				{
-					option_id: '018dd527-4842-710a-9d78-91b12b604136',
-					option_text: 'A type of machine learning that optimizes algorithms',
-					is_correct: false,
-					selected_option: false,
-				},
-				{
-					option_id: '018dd527-4841-7e4d-813b-3a20098e3b62',
-					option_text: 'A type of machine learning that classifies data',
-					is_correct: false,
-					selected_option: false,
-				},
-				{
-					option_id: '018dd527-4841-78fe-a0be-d28a38fef33c',
-					option_text: 'A type of machine learning that generates new content',
-					is_correct: true,
-					selected_option: true,
-				},
-			],
-		},
-		{
-			question_id: '018dd545-68f4-7f09-8ea2-4576e2f49eff',
-			question_text: 'Select All Incorrect About Generative AI?',
-			question_type: 'multi_select_mcq',
-			points: 1,
-			points_awarded: 0.0,
-			feedback_text:
-				"The attempted options are partially correct. The question requires the selection of the incorrect statements about generative AI. The option 'A type of machine learning that classifies data' is the only correct statement, the other selected options are also describing types of machine learning, not generative AI specifically. Please review the characteristics of generative AI to better understand and identify its unique features.",
-			answer_text: null,
-			mcq_options: [
-				{
-					option_id: '018dd545-68f4-77c4-9cb3-6528610c6373',
-					option_text: 'A type of machine learning that detects anomalies',
-					is_correct: true,
-					selected_option: true,
-				},
-				{
-					option_id: '018dd545-68f4-7434-afc6-18d947828582',
-					option_text: 'A type of machine learning that optimizes algorithms',
-					is_correct: true,
-					selected_option: true,
-				},
-				{
-					option_id: '018dd545-68f4-7092-9179-d3bda2a0c3b5',
-					option_text: 'A type of machine learning that classifies data',
-					is_correct: true,
-					selected_option: false,
-				},
-				{
-					option_id: '018dd545-68f3-7b79-b7ba-4ae3610aecaf',
-					option_text: 'A type of machine learning that generates new content',
-					is_correct: false,
-					selected_option: false,
-				},
-			],
-		},
-		{
-			question_id: '018dd545-68f2-7952-9172-3f3707e98a24',
-			question_text: 'What is Generative AI?',
-			question_type: 'open_text_question',
-			points: 1,
-			points_awarded: 0.9,
-			feedback_text:
-				'The attempted answer captures the essence of Generative AI but lacks specificity regarding the type of content it can create, as mentioned in the correct answer.',
-			answer_text: 'AI that generates content',
-			mcq_options: [],
-		},
-		{
-			question_id: '018dd545-68f3-7164-9740-7a7dfe01329a',
-			question_text: 'What is Prompt Engineering for Generative AI?',
-			question_type: 'open_text_question',
-			points: 1,
-			points_awarded: 0.5,
-			feedback_text:
-				'The attempted answer captures the general idea of prompt engineering for generative AI but lacks the specific details and depth mentioned in the correct answer. It does not fully convey the blend of art and science required, nor does it touch on the need to understand AI capabilities and craft precise queries.',
-			answer_text: 'Art of talking with llms to generate content',
-			mcq_options: [],
-		},
-	],
 };

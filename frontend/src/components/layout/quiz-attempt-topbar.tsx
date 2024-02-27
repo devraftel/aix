@@ -1,13 +1,17 @@
-import { Button } from '@/components/ui/button';
+'use client';
 import { useUser } from '@clerk/nextjs';
 import { X } from 'lucide-react';
 import Link from 'next/link';
 
-export const QuizTopBar = ({ title }: { title: string }) => {
+import { Button } from '@/components/ui/button';
+import { useQuizAttemptStore } from '@/store/quiz-attempt-store';
+
+export const QuizAttemptTopBar = () => {
 	const user = useUser();
+	const { quizAttempt } = useQuizAttemptStore();
 
 	return (
-		<div className='flex items-center justify-center bg-gray-200 w-full px-4 font-roboto '>
+		<header className='flex items-center justify-center bg-gray-200 w-full px-4 font-roboto '>
 			{/* username / email */}
 			<div className='flex-1 text-sm font-medium hidden md:block'>
 				{user?.user?.username ||
@@ -16,9 +20,9 @@ export const QuizTopBar = ({ title }: { title: string }) => {
 			</div>
 
 			{/* Quiz Title */}
-			<div className='flex-1 font-bold text-left md:text-center text-sm lg:text-base'>
-				Quiz: {title}
-			</div>
+			<h1 className='flex-1 font-bold text-left md:text-center text-sm lg:text-base'>
+				Quiz: {quizAttempt?.quiz_title}
+			</h1>
 
 			{/* Exit Button */}
 			<Link
@@ -34,6 +38,6 @@ export const QuizTopBar = ({ title }: { title: string }) => {
 					<span className='sr-only'>Exit</span>
 				</Button>
 			</Link>
-		</div>
+		</header>
 	);
 };

@@ -33,28 +33,3 @@ export const QuestionButton = ({
 		</Button>
 	);
 };
-
-{
-	/*
-
-<Link
-			href={{
-				pathname: pathname + `#${question_id}`,
-				query: { qs: question === '1' ? undefined : question },
-			}}
-			target='_self'
-			className={cn(
-				buttonVariants({
-					variant: 'outline',
-					size: 'icon',
-					className: cn(
-						((!qs && question === '1') || qs === question) &&
-							'bg-gray-950 text-white'
-					),
-				})
-			)}
-		>
-			{question}
-		</Link>
-*/
-}

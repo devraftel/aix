@@ -1,19 +1,22 @@
 'use client';
-import { attempt } from '@/components/actions/attempt';
-import MaxWidthWrapper from '@/components/max-width-wrapper';
-import { QUERY_KEY } from '@/lib/constants';
-import { useQuizAttemptStore } from '@/store/quiz-attempt-store';
 import { useQuery } from '@tanstack/react-query';
+import { usePathname, useRouter } from 'next/navigation';
 import { useCallback, useEffect } from 'react';
-
-import { submitQuiz } from '@/components/actions/quiz';
-import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { CountdownClock } from '../../_components/countdown-clock';
-import { QuizMultiselectQuestion } from '../../_components/quiz-multiselect-question';
-import { QuizOpentextQuestion } from '../../_components/quiz-opentext-question';
-import { QuizSingleSelectQuestion } from '../../_components/quiz-singleselect-question';
-import { QuizTopBar } from '../../_components/quiz-top-bar';
+
+import { QUERY_KEY } from '@/lib/constants';
+import { QuizAttempt, useQuizAttemptStore } from '@/store/quiz-attempt-store';
+
+import { attempt } from '@/components/actions/attempt';
+import { submitQuiz } from '@/components/actions/quiz';
+import MaxWidthWrapper from '@/components/max-width-wrapper';
+
+import {
+	QuizMultiselectQuestion,
+	QuizOpentextQuestion,
+	QuizSingleSelectQuestion,
+} from '@/app/(quiz-attempt)/_components/quiz-question';
+import { QuizTimer } from '@/app/(quiz-attempt)/_components/quiz-timer';
 
 interface QuizAttempProps {
 	params: {
@@ -21,9 +24,11 @@ interface QuizAttempProps {
 	};
 }
 
-export default function QuizAttemp({ params }: QuizAttempProps) {
+export default function QuizAttempt({ params }: QuizAttempProps) {
 	const { quiz_id } = params;
 	const router = useRouter();
+	const pathname = usePathname();
+
 	const {
 		setQuizAttempt,
 		quizAttempt,
@@ -39,30 +44,33 @@ export default function QuizAttemp({ params }: QuizAttempProps) {
 	});
 
 	const handleQuestionSubmit = useCallback(async () => {
-		if (currentQuestionIndex < quizAttempt?.questions.length! - 1) {
-			setCurrentQuestionIndex(currentQuestionIndex + 1);
-		} else {
-			toast('Quiz Completed', { description: 'Quiz has been submitted' });
-			const res = await submitQuiz(quizAttempt?.id!);
+		try {
+			if (currentQuestionIndex < quizAttempt?.questions.length! - 1) {
+				setCurrentQuestionIndex(currentQuestionIndex + 1);
+			} else {
+				toast('Quiz Completed', { description: 'Quiz has been submitted' });
+				const res = await submitQuiz(quizAttempt?.id!);
 
-			if (res.error) {
-				toast('Error Finishing quiz', { description: res.error });
-				return;
+				if (res.error) {
+					toast('Error Finishing quiz', { description: res.error });
+					return;
+				}
+
+				if (res?.data) {
+					const { data } = res;
+					const stringifiedData = Object.fromEntries(
+						Object.entries(data).map(([key, value]) => [key, String(value)])
+					);
+					const params = new URLSearchParams(stringifiedData);
+
+					reset();
+					router.push(`/quiz/${quizAttempt?.id}/result?${params}`);
+				}
 			}
-
-			if (res?.data) {
-				const { data } = res;
-				const stringifiedData = Object.fromEntries(
-					Object.entries(data).map(([key, value]) => [key, String(value)])
-				);
-				const params = new URLSearchParams(stringifiedData);
-
-				reset();
-				// Redirect the user to result route after submitting the quiz
-				router.push(`/quiz/${quizAttempt?.id}/result?${params}`);
-			}
-
-			// router.push(`/quiz/${quizAttempt?.id}/feedback`);
+		} catch (error) {
+			toast('Error submitting quiz', {
+				description: (error as { message: string }).message,
+			});
 		}
 	}, [
 		currentQuestionIndex,
@@ -94,11 +102,45 @@ export default function QuizAttemp({ params }: QuizAttempProps) {
 		currentQuestionIndex === quizAttempt?.questions.length! - 1;
 
 	return (
+		<QuizLayout
+			title={data?.data?.quiz_title ?? 'Quiz title'}
+			currentQuestion={currentQuestion}
+			isLastQuestion={isLastQuestion}
+			handleQuestionSubmit={handleQuestionSubmit}
+			quizAttempt={quizAttempt!}
+			currentQuestionIndex={currentQuestionIndex}
+		/>
+	);
+}
+
+interface QuizLayoutProps {
+	title: string;
+	currentQuestion: any;
+	isLastQuestion: boolean;
+	handleQuestionSubmit: () => void;
+	quizAttempt: QuizAttempt;
+	currentQuestionIndex: number;
+}
+
+function QuizLayout({
+	title,
+	currentQuestion,
+	isLastQuestion,
+	handleQuestionSubmit,
+	quizAttempt,
+	currentQuestionIndex,
+}: QuizLayoutProps) {
+	console.log('quizAttempt', quizAttempt);
+
+	return (
 		<>
-			<QuizTopBar title={data?.data?.quiz_title ?? 'Quiz title'} />
 			<MaxWidthWrapper className='mb-12 mt-28 sm:mt-40 flex flex-col items-center justify-center text-center'>
 				<div className='flex flex-col items-center justify-center space-y-10 md:space-y-16 lg:space-y-20 w-full'>
-					<CountdownClock />
+					<QuizTimer
+						startTime={quizAttempt?.time_start}
+						totalTime={parseFloat(quizAttempt?.time_limit)}
+						onExpire={handleQuestionSubmit}
+					/>
 
 					{currentQuestion?.question_type === 'open_text_question' && (
 						<QuizOpentextQuestion
