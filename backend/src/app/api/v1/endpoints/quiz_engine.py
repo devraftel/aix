@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, BackgroundTasks
 from sqlmodel.ext.asyncio.session import AsyncSession
 from typing import Annotated
 from uuid import UUID
@@ -22,7 +22,7 @@ async def get_quiz_list(
     user_id: Annotated[str, Depends(clerk_auth.get_session_details)],
     db_session: Annotated[AsyncSession, Depends(get_db)], 
     skip: int = Query(default=0, le=100), 
-    limit: int = Query(default=50, le=100)
+    limit: int = Query(default=50, le=100),
     ):
     """
     Gets a paginated list of quizzes for a user
@@ -123,9 +123,11 @@ async def remove_quiz(
 
 @router.post("/generate", response_model=IQuizRead)
 async def generate_quiz_rag_ai_pipeline(
-        user_id: Annotated[str, Depends(clerk_auth.get_session_details)],
+        # user_id: Annotated[str, Depends(clerk_auth.get_session_details)],
         generate_quiz_data: IGenerateQuiz,
-        db_session: Annotated[AsyncSession, Depends(get_db)]
+        db_session: Annotated[AsyncSession, Depends(get_db)],
+        background_tasks: BackgroundTasks,
+        user_id: str = "user_2cfYrCORxq1piHKT7vMZpvQaFqi",
 ):
     """
     Generate Quiz from NextJS - GUI
@@ -186,7 +188,6 @@ async def generate_quiz_rag_ai_pipeline(
         # # - sanitize and add questions to database
         sanitized_questions_in = IBatchQuestionsCreate(questions=generated_questions)
         print("\n---- sanitized_questions_in -----\n", sanitized_questions_in, "\n--------\n")
-        await crud.question_engine.create_questions_batch(questions_in=sanitized_questions_in, db_session=db_session)
 
         # # - count questions_added, total_points, and time_limit (if returned from GPT)
         count_questions_added = len(generated_questions)
@@ -198,9 +199,15 @@ async def generate_quiz_rag_ai_pipeline(
 
         # # 3. Update Quiz Fields and return it
         quiz_update_obj = IQuizUpdate(total_questions_count=count_questions_added, total_points=total_points, time_limit=time_limit)
-        quiz_updated = await crud.quiz_engine.update_quiz(user_id=user_id, quiz_id=quiz_in_db.id, quiz_obj=quiz_update_obj, db_session=db_session)
-        return quiz_updated
+        
+        for key, value in quiz_update_obj.model_dump(exclude_unset=True).items():
+            setattr(quiz_in_db, key, value)
 
+        background_tasks.add_task(crud.question_engine.create_questions_batch, db_session=db_session, questions_in=sanitized_questions_in)
+        background_tasks.add_task(crud.quiz_engine.update_quiz, user_id=user_id, quiz_id=quiz_in_db.id, quiz_obj=quiz_update_obj, db_session=db_session)
+
+        return quiz_in_db
+        
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
