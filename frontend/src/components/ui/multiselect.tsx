@@ -14,9 +14,12 @@ import {
 	PopoverContent,
 	PopoverTrigger,
 } from '@/components/ui/popover';
+import { QUERY_KEY } from '@/lib/constants';
 import { useFileDeleteStore } from '@/store/filedeletestore';
 import { useFileUploadStore } from '@/store/fileupload-store';
+import { useInfiniteQuery } from '@tanstack/react-query';
 import { ChevronsUpDown, Trash2, Upload, X } from 'lucide-react';
+import { fetchDocuments } from '../actions/fetch-document';
 
 export type OptionType = {
 	label: string;
@@ -24,19 +27,37 @@ export type OptionType = {
 };
 
 interface MultiSelectProps {
-	options: OptionType[];
+	// options: OptionType[];
 	selected: string[];
 	onChange: React.Dispatch<React.SetStateAction<string[]>>;
 	className?: string;
 }
 
 function MultiSelect({
-	options,
+	// options,
 	selected,
 	onChange,
 	className,
 	...props
 }: MultiSelectProps) {
+	// --- Fetch the options
+
+	const { data, isLoading, error } = useInfiniteQuery({
+		queryKey: [QUERY_KEY.DOCUMENTS],
+		queryFn: fetchDocuments,
+		initialPageParam: 1,
+		getNextPageParam: (_, pages) => pages.length + 1,
+	});
+
+	const document = data?.pages.flatMap((page) => page.data);
+
+	const options: OptionType[] =
+		document?.map((item: { id: string; file_name: string }) => ({
+			value: item.id,
+			label: item.file_name,
+		})) ?? [];
+
+	// ---
 	const [open, setOpen] = React.useState(false);
 	const { isDrawerOpen, setIsDrawerOpen } = useFileUploadStore();
 
@@ -50,6 +71,10 @@ function MultiSelect({
 	const handleFileUpload = () => {
 		setIsDrawerOpen(true);
 	};
+
+	if (isLoading || error) {
+		return <div>Loading docs...</div>;
+	}
 
 	return (
 		<Popover
@@ -150,3 +175,4 @@ function MultiSelect({
 }
 
 export { MultiSelect };
+

@@ -9,6 +9,51 @@ import {
 } from '@/type/quiz';
 import { auth } from '@clerk/nextjs';
 import { revalidateTag } from 'next/cache';
+import { redirect } from 'next/navigation';
+
+const retrieveDocuments = async ({
+	user_prompt,
+	user_file_ids,
+}: {
+	user_prompt: string;
+	user_file_ids: string[];
+}) => {
+	const baseUrl = getBaseURL();
+	const { sessionId } = auth();
+
+	const res = await fetch(`${baseUrl}/quiz/retrieve`, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+			Authorization: `Bearer ${sessionId}`,
+		},
+		body: JSON.stringify({
+			user_prompt,
+			user_file_ids,
+		}),
+	});
+
+	return res.json();
+};
+
+interface GenerateQuestions extends Generate {
+	retrieved_content: string;
+}
+const generateQuestions = async ({ data }: { data: GenerateQuestions }) => {
+	const baseUrl = getBaseURL();
+	const { sessionId } = auth();
+
+	const res = await fetch(`${baseUrl}/quiz/generate-questions`, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+			Authorization: `Bearer ${sessionId}`,
+		},
+		body: JSON.stringify(data),
+	});
+
+	return res.json();
+};
 
 export async function generateQuiz(data: Generate): Promise<{
 	error?: string;
@@ -19,13 +64,25 @@ export async function generateQuiz(data: Generate): Promise<{
 	if (!data) {
 		return { error: 'User data is required to create a quiz.' };
 	}
-	const { userId, sessionId } = auth();
 
+	const { userId, sessionId } = auth();
 	if (!userId) {
 		return { error: 'User is not logged in' };
 	}
 
 	const baseUrl = getBaseURL();
+
+	const documents = await retrieveDocuments({
+		user_prompt: data.user_prompt,
+		user_file_ids: data.user_file_ids,
+	});
+
+	const questions = await generateQuestions({
+		data: {
+			...data,
+			retrieved_content: documents,
+		},
+	});
 
 	const response = await fetch(`${baseUrl}/quiz/generate`, {
 		method: 'POST',
@@ -33,7 +90,10 @@ export async function generateQuiz(data: Generate): Promise<{
 			'Content-Type': 'application/json',
 			Authorization: `Bearer ${sessionId}`,
 		},
-		body: JSON.stringify(data),
+		body: JSON.stringify({
+			...data,
+			raq_gen_questions: questions,
+		}),
 	});
 
 	if (!response.ok) {
@@ -52,6 +112,7 @@ export async function generateQuiz(data: Generate): Promise<{
 	console.log('POST /quiz/generate success', json);
 
 	revalidateTag('quizList');
+	redirect(`/quiz/${json.id}`);
 
 	return { data: json };
 }

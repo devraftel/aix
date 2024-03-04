@@ -1,7 +1,7 @@
 'use client';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQueryClient } from '@tanstack/react-query';
-import { FileText, Upload } from 'lucide-react';
+import { Upload } from 'lucide-react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
@@ -11,7 +11,6 @@ import { QUERY_KEY } from '@/lib/constants';
 import { useFileUploadStore } from '@/store/fileupload-store';
 
 import { uploadDocument } from '@/components/actions/document';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import {
 	Drawer,
 	DrawerContent,
@@ -101,7 +100,7 @@ export const FileUploadForm = () => {
 
 													if (!isValid) {
 														// If validation fails, stop the upload process
-														toast(
+														toast.error(
 															`File size should be less than ${MAX_SIZE_MB}MB.`,
 															{
 																description: `Your file ${files[0].file.name} is too large.`,
@@ -118,20 +117,18 @@ export const FileUploadForm = () => {
 															const formData = new FormData();
 															formData.append('file', file.file);
 
-															const res = await uploadDocument(formData);
+															const res = uploadDocument(formData);
 
-															if (res.error) {
-																toast(`File upload failed.`, {
-																	description: `Your file ${file.file.name} failed to upload.`,
-																	closeButton: true,
-																});
-																setIsUploading(false);
-																return;
-															}
-
-															toast(`File Uploaded successfully.`, {
-																description: `Your file ${file.file.name} has been uploaded successfully.`,
-																closeButton: true,
+															toast.promise(res, {
+																loading: `Uploading`,
+																success: (data) => {
+																	return `File uploaded successfully.`;
+																},
+																error: (error) => {
+																	setIsUploading(false);
+																	return `File upload failed.`;
+																},
+																description: `${file.file.name} `,
 															});
 
 															if (index === files.length - 1) {
@@ -143,9 +140,8 @@ export const FileUploadForm = () => {
 															}
 														} catch (error) {
 															console.log(error);
-															toast(`File upload failed.`, {
+															toast.error(`File upload failed.`, {
 																description: `Your file ${file.file.name} could not be uploaded.`,
-																closeButton: true,
 															});
 														} finally {
 															setIsUploading(false);
@@ -155,27 +151,6 @@ export const FileUploadForm = () => {
 											/>
 										</label>
 									</div>
-									{form.watch('pdf') && (
-										<div className='mt-4 sm:mt-0 md:col-span-1'>
-											{form.watch('pdf').map((file, index) => (
-												<div
-													key={index}
-													className='flex items-center space-x-2'
-												>
-													<Alert>
-														<FileText className='h-4 w-4' />
-
-														<AlertTitle className='truncate block overflow-hidden text-overflow-ellipsis whitespace-nowrap'>
-															{file.file.name}
-														</AlertTitle>
-														<AlertDescription>
-															{(file.file.size / (1024 * 1024)).toFixed(2)} MB
-														</AlertDescription>
-													</Alert>
-												</div>
-											))}
-										</div>
-									)}
 								</div>
 							</FormControl>
 

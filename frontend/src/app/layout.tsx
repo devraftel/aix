@@ -3,8 +3,8 @@ import type { Metadata } from 'next';
 import { Open_Sans, Roboto } from 'next/font/google';
 import './globals.css';
 
-import { QueryProvider } from '@/providers/query-provider';
 import { cn } from '@/lib/utils';
+import { QueryProvider } from '@/providers/query-provider';
 import { ClerkProvider } from '@clerk/nextjs';
 
 const openSans = Open_Sans({ subsets: ['latin'], variable: '--font-opensans' });
@@ -35,7 +35,12 @@ export default function RootLayout({
 					)}
 				>
 					<QueryProvider>{children}</QueryProvider>
-					<Toaster />
+					<Toaster
+						position='bottom-right'
+						theme='light'
+						richColors
+						expand={true}
+					/>
 				</body>
 			</html>
 		</ClerkProvider>

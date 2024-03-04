@@ -1,10 +1,11 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
 
 import { UserFileResponse } from '@/components/actions/document';
-import { fetchDocuments } from '@/components/actions/fetch-document';
 import { generateQuiz } from '@/components/actions/quiz';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -18,16 +19,13 @@ import {
 	FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { MultiSelect, OptionType } from '@/components/ui/multiselect';
+import { MultiSelect } from '@/components/ui/multiselect';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
-import { QUERY_KEY } from '@/lib/constants';
+
 import { convertMinutesTimeDelta } from '@/lib/utils';
 import { useFileUploadStore } from '@/store/fileupload-store';
 import { Generate } from '@/type/quiz';
-import { useInfiniteQuery } from '@tanstack/react-query';
-import { useRouter } from 'next/navigation';
-import { toast } from 'sonner';
 import {
 	QuizGenerateRequest,
 	QuizGenerateValidator,
@@ -36,11 +34,12 @@ import {
 } from './utils';
 
 interface QuizGenerateFormProps {
-	initialDocument: UserFileResponse;
+	initialDocument?: UserFileResponse;
 }
 
 export function QuizeForm({ initialDocument }: QuizGenerateFormProps) {
 	const router = useRouter();
+
 	const { isDrawerOpen, setIsDrawerOpen } = useFileUploadStore();
 
 	const form = useForm<QuizGenerateRequest>({
@@ -56,29 +55,6 @@ export function QuizeForm({ initialDocument }: QuizGenerateFormProps) {
 		},
 	});
 
-	const { data, isLoading, error } = useInfiniteQuery({
-		queryKey: [QUERY_KEY.DOCUMENTS],
-		queryFn: fetchDocuments,
-		initialPageParam: 1,
-		getNextPageParam: (_, pages) => pages.length + 1,
-		initialData: {
-			pages: [initialDocument],
-			pageParams: [1],
-		},
-	});
-
-	if (isLoading || error) {
-		return <div>Loading...</div>;
-	}
-
-	const document = data?.pages.flatMap((page) => page.data);
-
-	const documents: OptionType[] =
-		document?.map((item: { id: string; file_name: string }) => ({
-			value: item.id,
-			label: item.file_name,
-		})) ?? [];
-
 	async function onSubmit(data: QuizGenerateRequest) {
 		try {
 			const timeDelta = convertMinutesTimeDelta(data?.time_limit);
@@ -93,23 +69,23 @@ export function QuizeForm({ initialDocument }: QuizGenerateFormProps) {
 				user_file_ids: data.file_ids,
 			};
 
-			const res = await generateQuiz(payload);
+			const res = generateQuiz(payload);
 
-			if (res.error) {
-				toast('Failed to generate quiz', {
-					description: res.error,
-				});
-				return;
-			}
-
-			toast('Quiz Generated Successfully', {
+			toast.promise(res, {
+				loading: 'Generating Quiz',
+				success: (data) => {
+					form.reset();
+					router.push(`/quiz`);
+					return 'Quiz Generated Successfully';
+				},
+				error: (error) => {
+					return 'Failed to generate quiz';
+				},
 				description: data.title,
 			});
-			form.reset();
-			router.push(`/quiz`);
 		} catch (error) {
 			console.log('Error', error);
-			toast('Failed to generate quiz', {
+			toast.error('Failed to generate quiz', {
 				description: 'An error occurred while generating the quiz.',
 			});
 		}
@@ -150,9 +126,9 @@ export function QuizeForm({ initialDocument }: QuizGenerateFormProps) {
 							<FormLabel>Documents</FormLabel>
 							<MultiSelect
 								selected={field.value}
-								options={documents}
+								// options={documents}
 								{...field}
-								className='w-[290px] sm:w-[384px]'
+								className={'w-[290px] sm:w-[384px]'}
 							/>
 							<FormDescription>
 								Can&apos;t find the document you are looking for?{' '}

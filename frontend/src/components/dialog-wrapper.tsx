@@ -88,6 +88,11 @@ export const DialogWrapper = () => {
 				queryClient.invalidateQueries({
 					queryKey: [QUERY_KEY.DOCUMENTS, fileId],
 				});
+
+				queryClient.refetchQueries({
+					queryKey: [QUERY_KEY.DOCUMENTS],
+				});
+
 				setIsFileDeleteOpen(!isFileDeleteOpen);
 			}
 		} catch (error) {
