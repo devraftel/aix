@@ -27,7 +27,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 
-const MAX_SIZE_MB = 35;
+const MAX_SIZE_MB = parseInt(process.env.MAX_SIZE_MB ?? '2');
 
 const formSchema = z.object({
 	pdf: z.array(
@@ -90,13 +90,26 @@ export const FileUploadForm = () => {
 												accept='.pdf'
 												className='hidden'
 												multiple={true}
-												onChange={(e) => {
+												onChange={async (e) => {
 													const files = Array.from(e.target.files || []).map(
 														(file) => ({ file })
 													);
 													field.onChange(files);
 
 													// ---
+													const isValid = await form.trigger('pdf');
+
+													if (!isValid) {
+														// If validation fails, stop the upload process
+														toast(
+															`File size should be less than ${MAX_SIZE_MB}MB.`,
+															{
+																description: `Your file ${files[0].file.name} is too large.`,
+																closeButton: true,
+															}
+														);
+														return;
+													}
 
 													setIsUploading(true);
 

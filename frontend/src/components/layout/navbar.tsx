@@ -1,5 +1,5 @@
-import MaxWidthWrapper from '@/components/max-width-wrapper';
 import MobileNav from '@/components/layout/mobile-nav';
+import MaxWidthWrapper from '@/components/max-width-wrapper';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { auth, UserButton } from '@clerk/nextjs';
 import { ArrowRight } from 'lucide-react';
@@ -23,7 +23,10 @@ const Navbar = async () => {
 						{!userId ? (
 							<>
 								<SignedOut>
-									<SignInButton mode='modal'>
+									<SignInButton
+										mode='modal'
+										afterSignInUrl='/quiz'
+									>
 										<Button
 											size='sm'
 											type='button'
