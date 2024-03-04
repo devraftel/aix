@@ -4,7 +4,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.models.question_bank_model import Question, MCQOptions
 from app.schemas.question_engine_schema import IQuestionCreate, IBatchQuestionsCreate
-
+from typing import Any
 
 class CRUDQuestionEngine:
     # 1. Create a Question
@@ -44,16 +44,20 @@ class CRUDQuestionEngine:
             raise e
 
     # 1.1 Create a Batch of Questions
-    async def create_questions_batch(self, *, db_session: AsyncSession, questions_in: IBatchQuestionsCreate):
+    async def create_questions_batch(self, *, db_session: AsyncSession, questions_in: Any):
         """
         1/ prepare all the questions (and their options, if applicable) 
         and commit them to the database in a single transaction. 
         """
         try:
+            # # - sanitize and add questions to database
+            sanitized_questions_in = IBatchQuestionsCreate(questions=questions_in)
+            print("\n---- sanitized_questions_in -----\n", sanitized_questions_in, "\n--------\n")
+
 
         # A. Prep Data for Batch Insert
             db_all_questions_obj: list = []
-            for question_in in questions_in.questions:
+            for question_in in sanitized_questions_in.questions:
                 # Step 1: # Check if question type is mcq
                 if question_in.question_type in ["single_select_mcq", "multi_select_mcq"]:
                     if question_in.mcq_options:

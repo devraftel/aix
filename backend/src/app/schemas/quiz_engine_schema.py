@@ -55,6 +55,10 @@ class IPaginatedQuizList(SQLModel):
 
     data: list[IQuizRead]
 
+class IRetrieveContent(SQLModel):
+    user_prompt: str | None = None
+    user_file_ids: list[UUID] 
+
 
 class IGenerateQuiz(SQLModel):
     title: str
@@ -63,7 +67,9 @@ class IGenerateQuiz(SQLModel):
     questions_type: list[QuestionTypeEnum]
     difficulty: QuestionDifficultyEnum
     user_prompt: str | None = None
+    retrieved_content: str | None = None
     user_file_ids: list[UUID] 
+    raq_gen_questions: dict | None = None
 
     class Config:
         {
