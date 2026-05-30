@@ -1,4 +1,4 @@
-# Aix - GenAI Powered Interactive Quizzes and FeedBack GPT.
+# Aix (GenAI Powered Interactive Quizzes and FeedBack GPT)
 
 Aix is here to transform the way quizzes are created, taken, and evaluated, catering to the needs of students, instructors, and educational institutions alike. And it provides instant feedback to students for each attempted questions and personalized learning resources.
 
